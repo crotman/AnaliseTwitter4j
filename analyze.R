@@ -4,6 +4,9 @@ library(magrittr)
 library(furrr)
 library(uuid)
 
+
+#clone("https://github.com/Twitter4J/Twitter4J.git","repository/Twitter4J")
+
 repository <- repository("repository/Twitter4j")
 
 iteracao <- 0
@@ -23,18 +26,17 @@ check_out_and_pmd <- function(commit, id){
 
 }
 
+check_out_and_pmd_possibly <- possibly(check_out_and_pmd, otherwise = tibble(sha = "erro"))
 
 commits <-  commits(repository) %>% 
-    map_df(as_tibble) %>% 
-    head(100) 
+    map_df(as_tibble)
 
-saveRDS(commits, "commits.rds")
+saveRDS(commits, file =  "commits.rds")
 
-commits_alerts <-  commits(repository) %>% 
-    head(100) %>% 
-    map_dfr(check_out_and_pmd)
+commits_alerts <-  commits(repository) %>%
+    map_dfr(check_out_and_pmd_possibly) 
     
-saveRDS(commits_alerts, "commits_alerts.rds")
+saveRDS(commits_alerts, file =  "commits_alerts.rds")
 
 
 
