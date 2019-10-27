@@ -1,12 +1,13 @@
 ---
-title: "PMD Alerts + Commits"
+title: "Preliminary exploratory analysis: PMD Alerts + Commits"
 author: "Bruno Crotman"
 date: "20/10/2019"
 output: 
     pdf_document:
         toc: true
         number_sections: true
-    
+  
+bibliography: bib.bib
 
     
 
@@ -25,7 +26,25 @@ library(lubridate)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-\section{Collecting data}
+\section{Introduction}
+
+This document shows the how to collect PMD alerts related to each commit of a project and introduces an analysis about this information.
+
+In the Section \ref{PMD}, this document explains briefly how PMD Source Code Analyzer works and which kind of alerts it generates. In the Section \ref{prelim} the data collection and a brief analysis using the project Twitter4J is shown. The section \ref{conclusion} discusses the conclusions and potential next steps for the work aiming an article or a PhD thesis.
+
+\section{PMD Alerts}\label{PMD}
+
+PMD is a source code analyzer that finds common flaws, like unused variables, empty catch blocks, unnecessary object creation and so forth [@pmd].
+
+In Java, the programing language in which Twittter4J is written, there are 8 groups of alerts: 
+
+* Best Practices: enforce generally accepted best practices, e.g. the usage of foreach instead of for when applicable, avoidance of hard coded IP addresses, avoidance of the reassignment of loop variables.
+
+\section{Preliminary analysis}\label{prelim} 
+
+
+\subsection{Collecting Data}\label{collect}
+
 
 The following code collects data from every commit made to Twitter4J project.
 
@@ -131,8 +150,6 @@ all_data <-  commits_from_cache %>%
 
 
 
-\section{Exploratory analysis}
-
 
 \subsection{Evolution of the code size}
 
@@ -206,8 +223,6 @@ ggplot(commits_per_week) +
 ```
 
 \subsection{Types of alert}
-
-
 
 
 
@@ -286,5 +301,10 @@ ggplot(rule_set) +
 
 
 ```
+
+
+\section{Conclusions and next steps} \label{conclusion}
+
+\section{References}
 
 
