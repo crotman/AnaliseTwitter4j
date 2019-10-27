@@ -36,11 +36,24 @@ In the Section \ref{PMD}, this document explains briefly how PMD Source Code Ana
 
 PMD is a source code analyzer that finds common flaws, like unused variables, empty catch blocks, unnecessary object creation and so forth [@pmd].
 
-In Java, the programing language in which Twittter4J is written, there are 8 groups of alerts: 
+In Java, the programing language in which Twittter4J is written, there are 8 groups of rules that generate alerts: 
 
 * Best Practices: enforce generally accepted best practices, e.g. the usage of foreach instead of for when applicable, avoidance of hard coded IP addresses, avoidance of the reassignment of loop variables.
 
+* Code Style: enforce specific ccode style, e.g, the non static classes must declare at leas one constructor, control statement must have braces.
+
+* Design: e.g. abstract classses must have methods, classes must not have too many fields or methods
+
+* Documentation: e.g. the comments' size must be within certain limits
+
+* Error prone: detect constructs that are either broken, extremely confusing or prone to runtime errors, e.g. assigment to operands, if statements whose conditionals are always true or always false.
+
+PMD lets you choose which types of alerts to use and even create new rules. In this work a "quick start" ruleset, that comes as a basic configuration, is used.
+
+
 \section{Preliminary analysis}\label{prelim} 
+
+In this preliminary analysis, the GitHub repository related to Twitter4J project [@twitter4j] is cloned and each commited code is analyzed by PMD (). The information is 
 
 
 \subsection{Collecting Data}\label{collect}
@@ -122,6 +135,10 @@ line_counts <-  commits(repository) %>%
     map_df(line_count_possibly) 
 
 saveRDS(line_counts, file =  "line_counts.rds")
+
+tags_hist <- tags(repository) %>% 
+  map_df(function(x) x$sha ) %>% 
+  pivot_longer(cols = everything(), names_to = "version", values_to = "sha")
 
 
 
