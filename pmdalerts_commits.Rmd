@@ -136,10 +136,40 @@ line_counts <-  commits(repository) %>%
 
 saveRDS(line_counts, file =  "line_counts.rds")
 
-tags_hist <- tags(repository) %>% 
-  map_df(function(x) x$sha ) %>% 
-  pivot_longer(cols = everything(), names_to = "version", values_to = "sha")
+tags_hist_author <- tags(repository) %>% 
+  map(function(x) x$author ) %>% 
+  map(function(x) as.character(x$when) ) %>%
+  enframe() %>% 
+  filter(str_detect(value,"[2]"))
+  
+tags_hist_tagger <- tags(repository) %>% 
+  map(function(x) x$tagger ) %>% 
+  map(function(x) as.character(x$when) ) %>%
+  enframe() %>% 
+  filter(str_detect(value,"[2]"))
 
+tags_hist <- bind_rows(tags_hist_author,tags_hist_tagger) %>% 
+  rename(
+    version = name,
+    date = value
+  ) %>% 
+  separate(col = version, into = c("major", "minor", "patch"), sep = "\\.") %>% 
+  mutate(
+    date = ymd_hms(date)
+  ) %>% 
+  arrange(date) %>% 
+  mutate(
+    lag_major = lag(major),
+    lag_minor = lag(minor)
+  ) %>% 
+  mutate(
+    major_changed = if_else(lag_major != major, T, F),
+    minor_changed = if_else(lag_minor != minor | major_changed , T, F)
+  ) 
+
+
+
+saveRDS(tags_hist, file =  "tags_hist.rds")
 
 
 ```
@@ -156,10 +186,36 @@ alerts_from_cache <- read_rds("commits_alerts.rds")
 
 lines_from_cache <- read_rds("line_counts.rds")
 
+tags_from_cache <- read_rds("tags_hist.rds")
+
+
+commits_com_tag <- commits_from_cache %>% 
+  arrange(when) %>% 
+  mutate(
+    next_commit = lead(when)
+  ) %>% 
+  crossing(tags_from_cache) %>% 
+  filter(date >= when, date < next_commit  ) %>% 
+  select(
+    sha,
+    major,
+    minor,
+    patch,
+    major_changed,
+    minor_changed
+  ) %>% 
+  mutate(
+    version = paste(major, minor, patch, sep = ".")
+  )
+
+
+
 
 all_data <-  commits_from_cache %>%  
+    left_join(commits_com_tag, by = c("sha")) %>% 
     inner_join(alerts_from_cache, by = c("sha")) %>% 
     inner_join(lines_from_cache, by = c("sha")) 
+  
 
 
 
@@ -181,18 +237,27 @@ After an instability, it seems that the project evolves from the commit 300 unti
 
 alerts_total <- all_data %>% 
     group_by(sha, when) %>% 
-    summarise(alerts_per_line = n()/mean(lines), lines = mean(lines), alerts = n() ) %>% 
+    summarise(
+      alerts_per_line = n()/mean(lines), 
+      lines = mean(lines), 
+      alerts = n() ,
+      version = first(version),
+      major_changed = first(major_changed),
+      minor_changed = first(minor_changed)
+    ) %>% 
     ungroup() %>% 
     arrange(when) %>% 
     mutate(commit = row_number())
 
 alerts_evolving <-  alerts_total %>% 
-    filter(between(commit,300, 1350))
+    filter(between(commit,300, 1450))
 
 
 ggplot(alerts_total) +
     geom_area(aes(x = commit, y = alerts_per_line ), fill = "gray") +
+    geom_text(data = alerts_total %>%  filter(minor_changed),aes(x = commit, y = alerts_per_line + 0.002, label = version )) +  
     geom_area(data = alerts_evolving, aes(x = commit, y = alerts_per_line ), fill = "darkred") +
+    geom_point(data = alerts_total %>% filter(minor_changed),aes(x = commit, y = alerts_per_line )) +
     theme_minimal() +
     scale_x_continuous(breaks = seq(0,to = 2500, by = 200))
 
