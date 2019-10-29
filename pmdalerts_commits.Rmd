@@ -13,7 +13,7 @@ bibliography: bib.bib
 
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, message=FALSE, warning=FALSE}
 
 library(git2r)
 library(tidyverse)
@@ -21,7 +21,10 @@ library(magrittr)
 library(furrr)
 library(uuid)
 library(lubridate)
+library(gridExtra)
+library(extrafont)
 
+loadfonts()
 
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -227,12 +230,13 @@ all_data <-  commits_from_cache %>%
 \subsection{Evolution of the code size}
 
 
-After an instability, it seems that the project evolves from the commit 300 until aproximately commit 1300. After that the number of lines of code ceases to increase, and so do the number of alerts and the number of alerts per line of code. 
+After an instability, it seems that the project evolves from the commit 300 until aproximately commit 1450, until the release of version 3.0.0. After that the number of lines of code ceases to increase, and so do the number of alerts and the number of alerts per line of code.
+
+Figure \ref{fig:evolution} shows this evolution, in terms of PMD alerts per line of code, total PMD alerts and total lines of code. The smaller red dots are release of minor versions. The bigger and labeled ones are major version releases.
 
 
 
-```{r}
-
+```{r, fig.cap="\\label{fig:evolution}Project evolution"}
 
 
 alerts_total <- all_data %>% 
@@ -253,50 +257,125 @@ alerts_evolving <-  alerts_total %>%
     filter(between(commit,300, 1450))
 
 
-ggplot(alerts_total) +
+p1 <- ggplot(alerts_total) +
     geom_area(aes(x = commit, y = alerts_per_line ), fill = "gray") +
-    geom_text(data = alerts_total %>%  filter(minor_changed),aes(x = commit, y = alerts_per_line + 0.002, label = version )) +  
+    geom_text(
+      data = alerts_total %>%  filter(minor_changed),
+      aes(x = commit, y = alerts_per_line + 0.006, label = version ),
+      color = "red",
+      size = 2,
+      family = "CMU Serif"
+    ) +  
     geom_area(data = alerts_evolving, aes(x = commit, y = alerts_per_line ), fill = "darkred") +
-    geom_point(data = alerts_total %>% filter(minor_changed),aes(x = commit, y = alerts_per_line )) +
+    geom_point(
+      data = alerts_total %>% filter(minor_changed),
+      aes(x = commit, y = alerts_per_line ),
+      color = "red",
+      size = 2
+    ) +
+    geom_point(
+      data = alerts_total %>% filter(!is.na(version)),
+      aes(x = commit, y = alerts_per_line ),
+      color = "red",
+      size = 1
+    ) +
     theme_minimal() +
-    scale_x_continuous(breaks = seq(0,to = 2500, by = 200))
+    scale_x_continuous(breaks = seq(0,to = 2500, by = 200)) +
+    ggtitle("Alerts per line x Commit") +
+    labs(x = "", y = "Alerts per line") +
+    theme(text =  element_text(size = 8, family = "CMU Serif"))
 
 
-ggplot(alerts_total) +
+p2 <- ggplot(alerts_total) +
     geom_area(aes(x = commit, y = alerts ), fill = "gray") +
     geom_area(data = alerts_evolving, aes(x = commit, y = alerts ), fill = "darkred") +
+    geom_text(
+      data = alerts_total %>%  filter(minor_changed),
+      aes(x = commit, y = alerts + 300, label = version ),
+      size = 2,
+      color = "red",
+      family = "CMU Serif"
+    ) +
+    geom_point(
+      data = alerts_total %>% filter(minor_changed),
+      aes(x = commit, y = alerts ),
+      color = "red",
+      size = 2
+    ) +
+    geom_point(
+      data = alerts_total %>% filter(!is.na(version)),
+      aes(x = commit, y = alerts ),
+      color = "red",
+      size = 1
+    ) +
     theme_minimal() +
-    scale_x_continuous(breaks = seq(0,to = 2500, by = 200)) 
+    scale_x_continuous(breaks = seq(0,to = 2500, by = 200)) +
+    ggtitle("Alerts x Commit") +
+    labs(x = "", y = "Alerts") +
+    theme(text =  element_text(size = 8, family = "CMU Serif"))
 
 
-ggplot(alerts_total) +
+p3 <- ggplot(alerts_total) +
     geom_area(aes(x = commit, y = lines ), fill = "gray") +
     geom_area(data = alerts_evolving, aes(x = commit, y = lines ), fill = "darkred") +
+    geom_text(
+      data = alerts_total %>%  filter(minor_changed),
+      aes(x = commit, y = lines + 13000, label = version ),
+      size = 2,
+      color = "red",
+      family = "CMU Serif"
+    ) +
+    geom_point(
+      data = alerts_total %>% filter(minor_changed),
+      aes(x = commit, y = lines ),
+      color = "red",
+      size = 2
+    ) +
+    geom_point(
+      data = alerts_total %>% filter(!is.na(version)),
+      aes(x = commit, y = lines ),
+      color = "red",
+      size = 1
+    ) +
     theme_minimal() +
-    scale_x_continuous(breaks = seq(0,to = 2500, by = 200))
+    scale_x_continuous(breaks = seq(0,to = 2500, by = 200))+
+    ggtitle("Lines x Commit") +
+    labs(x = "Commit", y = "Lines") +
+    theme(text =  element_text(size = 8, family = "CMU Serif"))
 
 
+grid.arrange(p1, p2, p3, nrow = 3)
 
 ```
 
 
+Figure \ref{fig:quarters} shows the number of commits made in each quarter.
 
-```{r}
+
+
+```{r,  fig.cap="\\label{fig:quarters}Project evolution"}
 
 commits_per_week <- alerts_total %>% 
-    mutate(week = round_date(when, "quarter") ) %>% 
+    mutate(week = as.Date(round_date(when, "quarter")) ) %>% 
     group_by(week) %>% 
     count(n = n())
 
 commits_per_week_evolving <- alerts_evolving %>% 
-    mutate(week = round_date(when, "quarter") ) %>% 
+    mutate(week = as.Date(round_date(when, "quarter") )) %>% 
     group_by(week) %>% 
     count(n = n())
 
 ggplot(commits_per_week) +
     geom_col(aes(x = week, y = n)) +
     geom_col(data = commits_per_week_evolving, aes(x = week, y = n), fill = "darkred") +
-    theme_minimal()
+    scale_x_date(
+      date_breaks = "year",
+      date_labels = "%Y"
+    ) +
+    ggtitle("Commits per quarter") +
+    theme_minimal() +
+    theme(text = element_text(family = "CMU Serif")) +
+    labs(y = "Number of commits", x = "Quarter")
     
 
 
@@ -305,6 +384,9 @@ ggplot(commits_per_week) +
 ```
 
 \subsection{Types of alert}
+
+
+It's possible to analyze the amount of each type of alert in the code and how they evolve along the commits.
 
 
 
@@ -319,12 +401,17 @@ rule_set <- all_data %>%
     mutate(per_line = 1/lines.x) %>% 
     group_by(commit, rule_set) %>% 
     summarise(per_line = sum(per_line)) %>% 
-    filter(between(commit, 300, 1350 ))
+    filter(between(commit, 300, 1450 ))
 
 
 ggplot(rule_set) +
     geom_line(aes(color = rule_set, x = commit, y = per_line)) +
-    theme_minimal()
+    theme_minimal() +
+    theme(
+      legend.position = "top",
+      text = element_text(family = "CMU Serif")
+    ) +
+    labs(x = "Commit", y = "Alerts per line", color = "Rule set")
 
 
 
@@ -332,7 +419,7 @@ ggplot(rule_set) +
 
 
 
-```{r}
+```{r, eval=FALSE, echo=FALSE }
 
 rule <- all_data %>% 
     rename(
@@ -345,7 +432,7 @@ rule <- all_data %>%
     group_by(commit, rule) %>% 
     summarise(per_line = sum(per_line)) %>% 
     ungroup() %>% 
-    filter(between(commit, 300, 1350 )) %>% 
+    filter(between(commit, 300, 1450 )) %>% 
     mutate(rule = fct_lump(rule, n = 8, w = per_line, other_level = "Other"))
 
 
@@ -358,6 +445,7 @@ ggplot() +
 
 
 ```
+
 
 
 ```{r}
@@ -373,7 +461,7 @@ rule_set <- all_data %>%
     summarise(per_line = sum(per_line)) %>% 
     ungroup() %>% 
     mutate(Priority = as.factor(Priority)) %>% 
-    filter(between(commit, 300, 1350 ))
+    filter(between(commit, 300, 1450 ))
 
 
 ggplot(rule_set) +
