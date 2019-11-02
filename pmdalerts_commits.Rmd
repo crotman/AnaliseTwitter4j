@@ -23,17 +23,18 @@ library(uuid)
 library(lubridate)
 library(gridExtra)
 library(extrafont)
+library(patchwork)
 
 loadfonts()
 
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
 \section{Introduction}
 
 This document shows the how to collect PMD alerts related to each commit of a project and introduces an analysis about this information.
 
-In the Section \ref{PMD}, this document explains briefly how PMD Source Code Analyzer works and which kind of alerts it generates. In the Section \ref{prelim} the data collection and a brief analysis using the project Twitter4J is shown. The section \ref{conclusion} discusses the conclusions and potential next steps for the work aiming an article or a PhD thesis.
+In the Section \ref{PMD}, this document explains briefly how PMD Source Code Analyzer works and which kind of alerts it generates. In the Section \ref{prelim} the data collection and a brief analysis using the project Twitter4J is shown. The section \ref{conclusion} discusses the next steps for the work.
 
 \section{PMD Alerts}\label{PMD}
 
@@ -69,7 +70,7 @@ Each commit is checked out and the PMD alerts are generated.
 In the end, all the PMD alerts are stored. 
 
 
-```{r , eval=FALSE, echo=TRUE}
+```{r , eval=FALSE}
 
 
 
@@ -230,13 +231,13 @@ all_data <-  commits_from_cache %>%
 \subsection{Evolution of the code size}
 
 
-After an instability, it seems that the project evolves from the commit 300 until aproximately commit 1450, until the release of version 3.0.0. After that the number of lines of code ceases to increase, and so do the number of alerts and the number of alerts per line of code.
+After an instability, it seems that the project evolves in a steady pace from the commit 300 until aproximately commit 1450, until the release of version 3.0.0. After that, the number of lines of code ceases to increase, and so do the number of alerts and the number of alerts per line of code.
 
-Figure \ref{fig:evolution} shows this evolution, in terms of PMD alerts per line of code, total PMD alerts and total lines of code. The smaller red dots are release of minor versions. The bigger and labeled ones are major version releases.
+Figure \ref{fig:evolution} shows this evolution, in terms of PMD alerts per line of code, total PMD alerts and total lines of code. The smaller red dots are releases of minor versions. The bigger and labeled ones are major version releases.
 
 
 
-```{r, fig.cap="\\label{fig:evolution}Project evolution"}
+```{r, fig.cap="\\label{fig:evolution}Project evolution by commit"}
 
 
 alerts_total <- all_data %>% 
@@ -343,8 +344,8 @@ p3 <- ggplot(alerts_total) +
     labs(x = "Commit", y = "Lines") +
     theme(text =  element_text(size = 8, family = "CMU Serif"))
 
+p1 + p2 + p3 + plot_layout(ncol = 1) + plot_annotation(title = "Evolution along the commits", theme = theme(text =  element_text(size = 10, family = "CMU Serif")) )
 
-grid.arrange(p1, p2, p3, nrow = 3)
 
 ```
 
@@ -353,44 +354,101 @@ Figure \ref{fig:quarters} shows the number of commits made in each quarter.
 
 
 
-```{r,  fig.cap="\\label{fig:quarters}Project evolution"}
+```{r,  fig.cap="\\label{fig:quarters}Project evolution by quarter"}
 
-commits_per_week <- alerts_total %>% 
-    mutate(week = as.Date(round_date(when, "quarter")) ) %>% 
-    group_by(week) %>% 
-    count(n = n())
+commits_per_quarter <- alerts_total %>% 
+  mutate(quarter = as.Date(round_date(when, "quarter")) ) %>% 
+  group_by(quarter) %>% 
+  count(n = n())
 
-commits_per_week_evolving <- alerts_evolving %>% 
-    mutate(week = as.Date(round_date(when, "quarter") )) %>% 
-    group_by(week) %>% 
-    count(n = n())
+commits_per_quarter_evolving <- alerts_evolving %>% 
+  mutate(quarter = as.Date(round_date(when, "quarter") )) %>% 
+  group_by(quarter) %>% 
+  count(n = n())
 
-ggplot(commits_per_week) +
-    geom_col(aes(x = week, y = n)) +
-    geom_col(data = commits_per_week_evolving, aes(x = week, y = n), fill = "darkred") +
-    scale_x_date(
-      date_breaks = "year",
-      date_labels = "%Y"
-    ) +
-    ggtitle("Commits per quarter") +
-    theme_minimal() +
-    theme(text = element_text(family = "CMU Serif")) +
-    labs(y = "Number of commits", x = "Quarter")
-    
+releases_per_quarter <- alerts_total %>%
+  filter(!is.na(minor_changed)) %>% 
+  mutate(quarter = as.Date(round_date(when, "quarter")) ) %>% 
+  count(quarter) %>% 
+  right_join(commits_per_quarter, by = c("quarter"), suffix = c("",".y")) %>% 
+  mutate(n = if_else(is.na(n),0L,n)) %>% 
+  select(quarter, n)
+  
+minor_releases <-  alerts_total %>%
+  filter(minor_changed) %>% 
+  mutate(quarter = as.Date(round_date(when, "quarter")) ) %>% 
+  left_join(commits_per_quarter, by = c("quarter"))
+
+  
+
+
+  
+
+ggplot(commits_per_quarter) +
+  geom_col(
+    data = releases_per_quarter, 
+    aes(x = quarter, y = max(commits_per_quarter$n) * 1.2, fill = n ), 
+    alpha = 0.5 , 
+    position = "identity", 
+    show.legend = FALSE
+  ) +
+  geom_col(aes(x = quarter, y = n)) +
+  geom_col(
+    data = commits_per_quarter_evolving, 
+    aes(x = quarter, y = n), 
+    fill = "darkred"
+  ) +
+  geom_text(
+    data = minor_releases,
+    aes(
+      x = quarter,
+      y = n,
+      label = version
+    ),
+    nudge_y = 20,
+    angle = 90,
+    size = 3,
+    family = "CMU Serif"
+  ) +
+  scale_x_date(
+    date_breaks = "year",
+    date_labels = "%Y"
+  ) +
+  ggtitle("Commits per quarter") +
+  theme_minimal() +
+  theme(text = element_text(family = "CMU Serif")) +
+  labs(y = "Number of commits", x = "Quarter") +
+  scale_y_continuous(limits = c(0,max(commits_per_quarter$n * 1.2))) +
+  scale_fill_gradient(low = "white", high = "darkred" )
+
+
 
 
 
 
 ```
 
-\subsection{Types of alert}
+\newpage
+
+\subsection{Types of alert}\label{sec:parts}
 
 
 It's possible to analyze the amount of each type of alert in the code and how they evolve along the commits.
 
+Figure \ref{fig:types} shows the evolution of the types of alerts by commit and releases. The light vertical lines refer to the release of a patch. The labeled vertical lines correspond to the minor and major releases.  
+
+Code Style alerts are most common, and Error Prone alerts are the second most common at the end of the period. There is a fast growth in Error Prone alerts just before the release of the version 2.2.0.
 
 
-```{r}
+```{r fig.cap="\\label{fig:types}Evolution of the types of alerts"}
+
+
+releases <- alerts_total %>% 
+  filter(!is.na(minor_changed))
+  
+releases_minor <- alerts_total %>% 
+  filter(minor_changed)
+  
 
 rule_set <- all_data %>% 
     rename(
@@ -400,12 +458,23 @@ rule_set <- all_data %>%
     inner_join(alerts_total, by = c("sha")) %>% 
     mutate(per_line = 1/lines.x) %>% 
     group_by(commit, rule_set) %>% 
-    summarise(per_line = sum(per_line)) %>% 
-    filter(between(commit, 300, 1450 ))
+    summarise(per_line = sum(per_line)) 
 
 
 ggplot(rule_set) +
-    geom_line(aes(color = rule_set, x = commit, y = per_line)) +
+    geom_line(aes(color = rule_set, x = commit, y = per_line), size = 1.2) +
+    geom_vline(data = releases,aes(xintercept = commit ), color = "darkred", alpha = 0.4) +
+    geom_vline(data = releases_minor,aes(xintercept = commit ), color = "darkred", alpha = 0.8) +
+    geom_text(
+      data = releases_minor,
+      aes(x = commit, y = 1.2* max(rule_set$per_line), label = version ), 
+      color = "darkred",
+      alpha = 0.8,
+      family = "CMU Serif",
+      size = 3,
+      angle = 90,
+      nudge_x = -25
+    ) +
     theme_minimal() +
     theme(
       legend.position = "top",
@@ -418,39 +487,18 @@ ggplot(rule_set) +
 ```
 
 
+\subsection{Priorities of the Alerts }
 
-```{r, eval=FALSE, echo=FALSE }
+PMD assigns priorities to the alerts. Priority 1 is the worst.
 
-rule <- all_data %>% 
-    rename(
-        rule_set = `Rule set`,
-        rule = Rule
-    ) %>% 
-    select(sha, when, author, Package, File, Priority, rule_set, rule, lines) %>% 
-    inner_join(alerts_total, by = c("sha")) %>% 
-    mutate(per_line = 1/lines.x) %>% 
-    group_by(commit, rule) %>% 
-    summarise(per_line = sum(per_line)) %>% 
-    ungroup() %>% 
-    filter(between(commit, 300, 1450 )) %>% 
-    mutate(rule = fct_lump(rule, n = 8, w = per_line, other_level = "Other"))
+Figure \ref{fig:priority} show the alerts by priority.
+
+There is a big increase just before the release of version 2.2.0. The origin of this increase must linked with the increase in the Error Prone alerts refered in Section \ref{sec:parts}.
 
 
-ggplot() +
-    geom_line(data = rule %>% filter(rule != "Other"), aes(color = rule, x = commit, y = per_line)) +
-    theme_minimal() +
-    theme(legend.position = "top") 
+```{r fig.cap="\\label{fig:priority}Evolution of the alerts by priority"}
 
-
-
-
-```
-
-
-
-```{r}
-
-rule_set <- all_data %>% 
+priority <- all_data %>% 
     rename(
         rule_set = `Rule set`
     ) %>% 
@@ -460,13 +508,31 @@ rule_set <- all_data %>%
     group_by(commit, Priority) %>% 
     summarise(per_line = sum(per_line)) %>% 
     ungroup() %>% 
-    mutate(Priority = as.factor(Priority)) %>% 
-    filter(between(commit, 300, 1450 ))
+    mutate(Priority = as.factor(Priority)) 
 
 
-ggplot(rule_set) +
-    geom_line(aes(color = Priority, x = commit, y = per_line)) +
-    theme_minimal()
+ggplot(priority) +
+    geom_line(aes(color = Priority, x = commit, y = per_line), size = 1.25) +
+    geom_vline(data = releases,aes(xintercept = commit ), color = "darkred", alpha = 0.4) +
+    geom_vline(data = releases_minor,aes(xintercept = commit ), color = "darkred", alpha = 0.8) +
+    geom_text(
+      data = releases_minor,
+      aes(x = commit, y = 1.2* max(priority$per_line), label = version ), 
+      color = "darkred",
+      alpha = 0.8,
+      family = "CMU Serif",
+      size = 3,
+      angle = 90,
+      nudge_x = -25
+    ) +
+    theme_minimal() +
+    theme(
+      legend.position = "top",
+      text = element_text(family = "CMU Serif")
+    ) +
+    labs(x = "Commit", y = "Alerts per line", color = "Priority") +
+    scale_color_manual(values = c("1" = "darkred","2" = "chocolate","3" = "orange","4" = "green")) 
+  
 
 
 
@@ -474,6 +540,20 @@ ggplot(rule_set) +
 
 
 \section{Conclusions and next steps} \label{conclusion}
+
+In the next weeks we will dive into this data. Now that we have the tools we need to grab the data linking alerts and commits of the projects, we can go through some analysis:
+
+* Can we find developers that consistently commit with too much alerts per line? 
+
+* Is "Alerts per line" a good proxy for kludges ?
+
+* Does the behavior of the developers change when they are aproaching a release or when the frequency of the commits is higher?
+
+* Does the team change its behavior when a member starts to kludge?
+
+* Does a change in the team behavior degrade the quality of the code?
+
+
 
 \section{References}
 
