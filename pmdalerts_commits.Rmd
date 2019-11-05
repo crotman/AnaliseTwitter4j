@@ -1,7 +1,7 @@
 ---
 title: "Preliminary exploratory analysis: PMD Alerts + Commits"
 author: "Bruno Crotman"
-date: "20/10/2019"
+date: "02/11/2019"
 output: 
     pdf_document:
         toc: true
@@ -32,7 +32,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 \section{Introduction}
 
-This document shows the how to collect PMD alerts related to each commit of a project and introduces an analysis about this information.
+This document shows how to collect PMD alerts related to each commit of a project and introduces an analysis about this information.
 
 In the Section \ref{PMD}, this document explains briefly how PMD Source Code Analyzer works and which kind of alerts it generates. In the Section \ref{prelim} the data collection and a brief analysis using the project Twitter4J is shown. The section \ref{conclusion} discusses the next steps for the work.
 
@@ -57,13 +57,13 @@ PMD lets you choose which types of alerts to use and even create new rules. In t
 
 \section{Preliminary analysis}\label{prelim} 
 
-In this preliminary analysis, the GitHub repository related to Twitter4J project [@twitter4j] is cloned and each commited code is analyzed by PMD (). The information is 
+In this preliminary analysis, the GitHub repository related to Twitter4J project [@twitter4j] is cloned and each commited code is analyzed by PMD.
 
 
 \subsection{Collecting Data}\label{collect}
 
 
-The following code collects data from every commit made to Twitter4J project.
+A script collects data from every commit made to Twitter4J project.
 
 Each commit is checked out and the PMD alerts are generated.
 
@@ -179,7 +179,7 @@ saveRDS(tags_hist, file =  "tags_hist.rds")
 ```
 
 
-Data can be loaded from the files that serve as cache
+Data can be loaded from the files that serve as cache.
 
 
 ```{r, cache=TRUE}
@@ -233,7 +233,7 @@ all_data <-  commits_from_cache %>%
 
 After an instability, it seems that the project evolves in a steady pace from the commit 300 until aproximately commit 1450, until the release of version 3.0.0. After that, the number of lines of code ceases to increase, and so do the number of alerts and the number of alerts per line of code.
 
-Figure \ref{fig:evolution} shows this evolution, in terms of PMD alerts per line of code, total PMD alerts and total lines of code. The smaller red dots are releases of minor versions. The bigger and labeled ones are major version releases.
+Figure \ref{fig:evolution} shows this evolution, in terms of PMD alerts per line of code, total PMD alerts and total lines of code. The smaller red dots are releases of patch versions. The bigger and labeled ones are minor version releases. Here we use the definition of major, minor and patch versions as in Semantic Versioning 2.0.0 [@semver].
 
 
 
@@ -350,7 +350,13 @@ p1 + p2 + p3 + plot_layout(ncol = 1) + plot_annotation(title = "Evolution along 
 ```
 
 
-Figure \ref{fig:quarters} shows the number of commits made in each quarter.
+Figure \ref{fig:quarters} shows the number of commits made in each quarter represented in the columns. 
+
+The darkred columns are related to commits between 300 and 1450. These are the same commits represented in red in the Figure \ref{fig:evolution}, the period in which the number of lines of code is increasing.
+
+The ribbons in the backgorund represent the number of releases. The color scale for the number of releases per quarter goes from white (no release) to dark red (more releases).
+
+It´s possible to notice that there is a concentration in the same period when the number of lines and alerts per line is increasing.
 
 
 
@@ -552,6 +558,8 @@ In the next weeks we will dive into this data. Now that we have the tools we nee
 * Does the team change its behavior when a member starts to kludge?
 
 * Does a change in the team behavior degrade the quality of the code?
+
+* All of these analysis can be made for many java open source projects. Some of the projects we can analyse are: Elastic Search (https://github.com/elastic/elasticsearch), Hadoop (https://github.com/apache/hadoop), Guava (https://github.com/google/guava), Spring (https://github.com/spring-projects/spring-framework), Libgdx (https://github.com/libgdx/libgdx), Jenkins (https://github.com/jenkinsci/jenkins), Open Legislation (https://github.com/nysenate/OpenLegislation), Seleniun (https://github.com/nysenate/OpenLegislation), PrestoDB (https://github.com/prestodb/presto).
 
 
 
