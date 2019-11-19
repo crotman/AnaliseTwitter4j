@@ -84,9 +84,9 @@ read_pmd_xml <- function(arquivo){
     
 }
     
-# clone("https://github.com/Twitter4J/Twitter4J.git","repository/Twitter4J")
+clone("https://github.com/Twitter4J/Twitter4J.git","repository/Twitter4J")
 # 
-# repository <- repository("repository/Twitter4j")
+repository <- repository("repository/Twitter4j")
 
 
 # check_out_and_pmd_possibly <- possibly(check_out_and_pmd_xml, otherwise = tibble(sha = "erro"))
@@ -94,8 +94,8 @@ read_pmd_xml <- function(arquivo){
 # 
 # repository <- repository("repository/Twitter4j")
 # 
-# commits <-  commits(repository) %>%
-#     map_df(as_tibble)
+commits <-  commits(repository) %>%
+    map_df(as_tibble)
 # 
 # commits_alerts <-  commits(repository) %>%
 #     map_dfr(check_out_and_pmd_possibly)

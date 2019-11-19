@@ -25,10 +25,10 @@ counts <- content_xml %>%
     as_list() %>% 
     map(.f = length ) %>% 
     enframe() %>% 
-    unnest() %>% 
+    unnest(value) %>% 
     mutate(list = map(.x = value, .f = function(x){tibble(alert = 1:x)} ) ) %>% 
     select(-value) %>% 
-    unnest() %>% 
+    unnest(list) %>% 
     transmute(file = name)
     
 alerts_with_features <- bind_cols(alerts,counts) %>% 
