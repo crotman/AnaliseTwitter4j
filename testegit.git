@@ -1,0 +1,359 @@
+0	10	twitter4j-appengine/src/main/java/twitter4j/LazyDirectMessage.java
+1	39	twitter4j-core/src/internal-json/java/twitter4j/DirectMessageJSONImpl.java
+0	28	twitter4j-core/src/main/java/twitter4j/DirectMessage.java
+0	75	twitter4j-core/src/main/java/twitter4j/QuickReply.java
+11	60	twitter4j-core/src/main/java/twitter4j/TwitterImpl.java
+6	34	twitter4j-core/src/main/java/twitter4j/api/DirectMessagesResources.java
+1	30	twitter4j-core/src/test/java/twitter4j/DirectMessagesResourcesTest.java
+ delete mode 100644 twitter4j-core/src/main/java/twitter4j/QuickReply.java
+
+diff --git a/twitter4j-appengine/src/main/java/twitter4j/LazyDirectMessage.java b/twitter4j-appengine/src/main/java/twitter4j/LazyDirectMessage.java
+index 5e6420f9..b243f37e 100644
+--- a/twitter4j-appengine/src/main/java/twitter4j/LazyDirectMessage.java
++++ b/twitter4j-appengine/src/main/java/twitter4j/LazyDirectMessage.java
+@@ -115,10 +114,0 @@ final class LazyDirectMessage implements twitter4j.DirectMessage {
+-    @Override
+-    public QuickReply[] getQuickReplies() {
+-        return getTarget().getQuickReplies();
+-    }
+-
+-    @Override
+-    public String getQuickReplyResponse() {
+-        return getTarget().getQuickReplyResponse();
+-    }
+-
+diff --git a/twitter4j-core/src/internal-json/java/twitter4j/DirectMessageJSONImpl.java b/twitter4j-core/src/internal-json/java/twitter4j/DirectMessageJSONImpl.java
+index 16ca769f..7a9d993a 100644
+--- a/twitter4j-core/src/internal-json/java/twitter4j/DirectMessageJSONImpl.java
++++ b/twitter4j-core/src/internal-json/java/twitter4j/DirectMessageJSONImpl.java
+@@ -21 +20,0 @@ import twitter4j.conf.Configuration;
+-import java.util.ArrayList;
+@@ -24 +22,0 @@ import java.util.Date;
+-import java.util.List;
+@@ -44,2 +41,0 @@ import java.util.List;
+-    private QuickReply[] quickReplies;
+-    private String quickReplyResponse;
+@@ -105,17 +100,0 @@ import java.util.List;
+-            if (!messageData.isNull("quick_reply")) {
+-                // dm with quick reply options
+-                JSONArray options = messageData.getJSONObject("quick_reply").getJSONArray("options");
+-                List<QuickReply> quickReplyList = new ArrayList<QuickReply>();
+-                for (int i = 0; i < options.length(); i++) {
+-                    JSONObject option = options.getJSONObject(i);
+-                    String description = option.isNull("description") ? null :option.getString("description");
+-                    String metadata = option.isNull("metadata") ? null :option.getString("metadata");
+-                    quickReplyList.add(new QuickReply(option.getString("label"), description, metadata));
+-                }
+-                quickReplies = quickReplyList.toArray(new QuickReply[quickReplyList.size()]);
+-            }else{
+-                quickReplies = new QuickReply[0];
+-            }
+-            if (!messageData.isNull("quick_reply_response") && !messageData.getJSONObject("quick_reply_response").isNull("metadata")) {
+-                quickReplyResponse = messageData.getJSONObject("quick_reply_response").getString("metadata");
+-            }
+@@ -219,10 +197,0 @@ import java.util.List;
+-    @Override
+-    public QuickReply[] getQuickReplies() {
+-        return quickReplies;
+-    }
+-
+-    @Override
+-    public String getQuickReplyResponse() {
+-        return quickReplyResponse;
+-    }
+-
+@@ -250,4 +219 @@ import java.util.List;
+-        if (!Arrays.equals(symbolEntities, that.symbolEntities)) return false;
+-        // Probably incorrect - comparing Object[] arrays with Arrays.equals
+-        if (!Arrays.equals(quickReplies, that.quickReplies)) return false;
+-        return quickReplyResponse != null ? quickReplyResponse.equals(that.quickReplyResponse) : that.quickReplyResponse == null;
++        return Arrays.equals(symbolEntities, that.symbolEntities);
+@@ -268,2 +233,0 @@ import java.util.List;
+-        result = 31 * result + Arrays.hashCode(quickReplies);
+-        result = 31 * result + (quickReplyResponse != null ? quickReplyResponse.hashCode() : 0);
+@@ -286,2 +249,0 @@ import java.util.List;
+-                ", quickReplies=" + Arrays.toString(quickReplies) +
+-                ", quickReplyResponse='" + quickReplyResponse + '\'' +
+diff --git a/twitter4j-core/src/main/java/twitter4j/DirectMessage.java b/twitter4j-core/src/main/java/twitter4j/DirectMessage.java
+index 7921b953..c5ef5712 100644
+--- a/twitter4j-core/src/main/java/twitter4j/DirectMessage.java
++++ b/twitter4j-core/src/main/java/twitter4j/DirectMessage.java
+@@ -43,28 +42,0 @@ public interface DirectMessage extends TwitterResponse, EntitySupport, java.io.S
+-    /**
+-     *
+-     * @return quick reply options
+-     * @since Twitter4J 4.0.7
+-     */
+-    QuickReply[] getQuickReplies();
+-
+-    /**
+-     *
+-     * @return quick reply response metadata
+-     * @since Twitter4J 4.0.7
+-     */
+-    String getQuickReplyResponse();
+-
+-    /**
+-     *
+-     * @return quick reply options
+-     * @since Twitter4J 4.0.7
+-     */
+-    QuickReply[] getQuickReplies();
+-
+-    /**
+-     *
+-     * @return quick reply response metadata
+-     * @since Twitter4J 4.0.7
+-     */
+-    String getQuickReplyResponse();
+-
+diff --git a/twitter4j-core/src/main/java/twitter4j/QuickReply.java b/twitter4j-core/src/main/java/twitter4j/QuickReply.java
+deleted file mode 100644
+index 5ac432d8..00000000
+--- a/twitter4j-core/src/main/java/twitter4j/QuickReply.java
++++ /dev/null
+@@ -1,75 +0,0 @@
+-/*
+- * Copyright 2007 Yusuke Yamamoto
+- *
+- * Licensed under the Apache License, Version 2.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- *
+- *      http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package twitter4j;
+-
+-public final class QuickReply implements java.io.Serializable{
+-    private static final long serialVersionUID = 2928983476392757806L;
+-    private final String label;
+-    private final String description;
+-    private final String metadata;
+-
+-    /**
+-     * @param label The text label displayed on the button face. Label text is returned as the user’s message response. String, max length of 36 characters including spaces. Values with URLs are not allowed and will return an error.
+-     * @param description Optional description text displayed under label text. All options must have this property defined if property is present in any option. Text is auto-wrapped and will display on a max of two lines and supports n for controling line breaks. Description text is not include in the user’s message response. String, max length of 72 characters including spaces.
+-     * @param metadata Metadata that will be sent back in the webhook request. String, max length of 1,000 characters including spaces.
+-     */
+-    public QuickReply(String label, String description, String metadata) {
+-        this.label = label;
+-        this.description = description;
+-        this.metadata = metadata;
+-    }
+-
+-    public String getLabel() {
+-        return label;
+-    }
+-
+-    public String getDescription() {
+-        return description;
+-    }
+-
+-    public String getMetadata() {
+-        return metadata;
+-    }
+-
+-    @Override
+-    public boolean equals(Object o) {
+-        if (this == o) return true;
+-        if (o == null || getClass() != o.getClass()) return false;
+-
+-        QuickReply that = (QuickReply) o;
+-
+-        if (label != null ? !label.equals(that.label) : that.label != null) return false;
+-        if (description != null ? !description.equals(that.description) : that.description != null) return false;
+-        return metadata != null ? metadata.equals(that.metadata) : that.metadata == null;
+-    }
+-
+-    @Override
+-    public int hashCode() {
+-        int result = label != null ? label.hashCode() : 0;
+-        result = 31 * result + (description != null ? description.hashCode() : 0);
+-        result = 31 * result + (metadata != null ? metadata.hashCode() : 0);
+-        return result;
+-    }
+-
+-    @Override
+-    public String toString() {
+-        return "QuickReply{" +
+-                "label='" + label + '\'' +
+-                ", description='" + description + '\'' +
+-                ", metadata='" + metadata + '\'' +
+-                '}';
+-    }
+-}
+diff --git a/twitter4j-core/src/main/java/twitter4j/TwitterImpl.java b/twitter4j-core/src/main/java/twitter4j/TwitterImpl.java
+index 132050c8..45ab67f6 100644
+--- a/twitter4j-core/src/main/java/twitter4j/TwitterImpl.java
++++ b/twitter4j-core/src/main/java/twitter4j/TwitterImpl.java
+@@ -443 +443 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
+-    public DirectMessage sendDirectMessage(long recipientId, String text, QuickReply... quickReplies)
++    public DirectMessage sendDirectMessage(long recipientId, String text, long messageId)
+@@ -446,2 +446,6 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
+-            return factory.createDirectMessage(post(conf.getRestBaseURL() + "direct_messages/events/new.json",
+-                    createMessageCreateJsonObject(recipientId, text, -1L,  null, quickReplies)));
++            final JSONObject json = new JSONObject();
++            final JSONObject event = new JSONObject();
++            event.put("type", "message_create");
++            event.put("message_create", createMessageCreateJsonObject(recipientId, text, messageId));
++            json.put("event", event);
++            return factory.createDirectMessage(post(conf.getRestBaseURL() + "direct_messages/events/new.json", json));
+@@ -452,12 +456 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
+-    @Override
+-    public DirectMessage sendDirectMessage(long recipientId, String text, String quickReplyResponse)
+-            throws TwitterException {
+-        try {
+-            return factory.createDirectMessage(post(conf.getRestBaseURL() + "direct_messages/events/new.json",
+-                    createMessageCreateJsonObject(recipientId, text, -1L,  quickReplyResponse)));
+-        } catch (JSONException e) {
+-            throw new TwitterException(e);
+-        }
+-    }
+-
+-    private static JSONObject createMessageCreateJsonObject(long recipientId, String text, long mediaId, String quickReplyResponse, QuickReply... quickReplies) throws JSONException {
++    private static JSONObject createMessageCreateJsonObject(long recipientId, String text, long mediaId) throws JSONException {
+@@ -466 +459 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
+-        final JSONObject messageDataJSON = new JSONObject();
++        final JSONObject json = new JSONObject();
+@@ -470 +463 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
+-        messageDataJSON.put("target", target);
++        json.put("target", target);
+@@ -484,32 +477 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
+-        // https://developer.twitter.com/en/docs/direct-messages/quick-replies/api-reference/options
+-        if (quickReplies.length > 0) {
+-            JSONObject quickReplyJSON = new JSONObject();
+-            quickReplyJSON.put("type", "options");
+-            JSONArray jsonArray = new JSONArray();
+-            for (QuickReply quickReply : quickReplies) {
+-                JSONObject option = new JSONObject();
+-                option.put("label", quickReply.getLabel());
+-                if (quickReply.getDescription() != null) {
+-                    option.put("description", quickReply.getDescription());
+-                }
+-                if (quickReply.getMetadata() != null) {
+-                    option.put("metadata", quickReply.getMetadata());
+-                }
+-                jsonArray.put(option);
+-            }
+-            quickReplyJSON.put("options",jsonArray);
+-            messageData.put("quick_reply", quickReplyJSON);
+-        }
+-        if (quickReplyResponse != null) {
+-            JSONObject quickReplyResponseJSON = new JSONObject();
+-            quickReplyResponseJSON.put("type","options");
+-            quickReplyResponseJSON.put("metadata", quickReplyResponse);
+-            messageData.put("quick_reply_response", quickReplyResponseJSON);
+-        }
+-        messageDataJSON.put("message_data", messageData);
+-
+-        final JSONObject json = new JSONObject();
+-        final JSONObject event = new JSONObject();
+-        event.put("type", "message_create");
+-        event.put("message_create", messageDataJSON);
+-        json.put("event", event);
++        json.put("message_data", messageData);
+@@ -520,11 +481,0 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
+-    @Override
+-    public DirectMessage sendDirectMessage(long recipientId, String text, long mediaId)
+-            throws TwitterException {
+-        try {
+-            return factory.createDirectMessage(post(conf.getRestBaseURL() + "direct_messages/events/new.json",
+-                    createMessageCreateJsonObject(recipientId, text, mediaId, null)));
+-        } catch (JSONException e) {
+-            throw new TwitterException(e);
+-        }
+-    }
+-
+diff --git a/twitter4j-core/src/main/java/twitter4j/api/DirectMessagesResources.java b/twitter4j-core/src/main/java/twitter4j/api/DirectMessagesResources.java
+index 61ff2075..f69b90dc 100644
+--- a/twitter4j-core/src/main/java/twitter4j/api/DirectMessagesResources.java
++++ b/twitter4j-core/src/main/java/twitter4j/api/DirectMessagesResources.java
+@@ -19 +19,5 @@ package twitter4j.api;
+-import twitter4j.*;
++import twitter4j.DirectMessage;
++import twitter4j.DirectMessageList;
++import twitter4j.Paging;
++import twitter4j.ResponseList;
++import twitter4j.TwitterException;
+@@ -88 +91,0 @@ public interface DirectMessagesResources {
+-     * @param quickReplies Quick Replies
+@@ -94 +97 @@ public interface DirectMessagesResources {
+-    DirectMessage sendDirectMessage(long userId, String text, QuickReply... quickReplies)
++    DirectMessage sendDirectMessage(long userId, String text)
+@@ -97,16 +99,0 @@ public interface DirectMessagesResources {
+-    /**
+-     * Sends a new direct message to the specified user from the authenticating user.  Requires both the user and text parameters below.
+-     * The text will be trimmed if the length of the text is exceeding 140 characters.
+-     * <br>This method calls https://dev.twitter.com/rest/reference/post/direct_messages/events/new
+-     *
+-     * @param userId the user id of the user to whom send the direct message
+-     * @param text   The text of your direct message.
+-     * @param quickReplyResponse Quick Reply response
+-     * @return DirectMessage
+-     * @throws TwitterException when Twitter service or network is unavailable
+-     * @see <a href="https://developer.twitter.com/en/docs/direct-messages/sending-and-receiving/api-reference/new-event">POST direct_messages/events/new (message_create) — Twitter Developers</a>
+-     * @since Twitter4j 2.1.0
+-     */
+-    DirectMessage sendDirectMessage(long userId, String text, String quickReplyResponse)
+-            throws TwitterException;
+-
+@@ -128,15 +114,0 @@ public interface DirectMessagesResources {
+-    /**
+-     * Sends a new direct message to the specified user from the authenticating user.  Requires both the user and text parameters below.
+-     * The text will be trimmed if the length of the text is exceeding 140 characters.
+-     * <br>This method calls https://dev.twitter.com/rest/reference/post/direct_messages/events/new
+-     *
+-     * @param userId the user id of the user to whom send the direct message
+-     * @param text   The text of your direct message.
+-     * @return DirectMessage
+-     * @throws TwitterException when Twitter service or network is unavailable
+-     * @see <a href="https://developer.twitter.com/en/docs/direct-messages/sending-and-receiving/api-reference/new-event">POST direct_messages/events/new (message_create) — Twitter Developers</a>
+-     * @since Twitter4J 4.0.7
+-     */
+-    DirectMessage sendDirectMessage(long userId, String text)
+-            throws TwitterException;
+-
+diff --git a/twitter4j-core/src/test/java/twitter4j/DirectMessagesResourcesTest.java b/twitter4j-core/src/test/java/twitter4j/DirectMessagesResourcesTest.java
+index 998504e7..cb21eae3 100644
+--- a/twitter4j-core/src/test/java/twitter4j/DirectMessagesResourcesTest.java
++++ b/twitter4j-core/src/test/java/twitter4j/DirectMessagesResourcesTest.java
+@@ -29,19 +28,0 @@ class DirectMessagesResourcesTest extends TwitterTestBase {
+-    @Test
+-    void testQuickResponse() throws Exception{
+-        String message = "hello " + new Date().toString();
+-        DirectMessage sent = rwPrivateMessage.sendDirectMessage(id1.id, message,
+-                new QuickReply("label1", "description1","metadata1"),
+-                new QuickReply("label2", "description2","metadata2"));
+-        assertEquals(rwPrivate.id, sent.getSenderId());
+-        assertEquals(id1.id, sent.getRecipientId());
+-        assertEquals(2,    sent.getQuickReplies().length);
+-
+-        DirectMessage sent2 = twitter1.sendDirectMessage(rwPrivate.id, "label2",
+-                "metadata2");
+-        // https://twittercommunity.com/t/quick-reply-response-not-propagated/111006
+-//        assertEquals("metadata2", sent2.getQuickReplyResponse());
+-        assertEquals(rwPrivate.id, sent.getSenderId());
+-        assertEquals(id1.id, sent.getRecipientId());
+-
+-
+-    }
+@@ -58 +39 @@ class DirectMessagesResourcesTest extends TwitterTestBase {
+-        DirectMessage sent = twitter1.sendDirectMessage(rwPrivate.id, message);
++        DirectMessage sent = twitter1.directMessages().sendDirectMessage(rwPrivate.id, message);
+@@ -74,10 +54,0 @@ class DirectMessagesResourcesTest extends TwitterTestBase {
+-        // message with quick reply
+-
+-        DirectMessage directMessageWithQuickReplies = twitter1.sendDirectMessage(rwPrivate.id, "hello" + new Date(), new QuickReply("らべる１", "説明1", "めたでーた1")
+-                , new QuickReply("label2", "description 2", "metadata 2")
+-                , new QuickReply("label3", "description 3", null));
+-        QuickReply[] quickReplies = directMessageWithQuickReplies.getQuickReplies();
+-        assertEquals(3, quickReplies.length);
+-        assertEquals(new QuickReply("らべる１", "説明1", "めたでーた1"), quickReplies[0]);
+-        assertNull(quickReplies[2].getMetadata());
+-
