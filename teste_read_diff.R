@@ -64,8 +64,11 @@ diff_marks <- read_table("testegit.git", col_names = FALSE) %>%
         as.integer
     ) %>% 
     mutate(
+        line_add = if_else(n_add == 0, line_add + 1L, line_add)
+    ) %>% 
+    mutate(
         end_remove = line_remove + n_remove - 1L,
-        end_add = line_add + n_add
+        end_add = line_add + n_add - 1L
     ) %>% 
     group_by(id_diff) %>% 
     mutate(
@@ -79,7 +82,7 @@ last_diff <- diff_marked %>%
     summarise(
         line_remove = first(lines_prev) + 1L ,
         n_remove = NA,
-        line_add = first(lines_post) ,
+        line_add = first(lines_post) + 1L ,
         n_add = NA,
         file_prev = first(file_prev),
         file_post = first(file_post),
@@ -108,8 +111,8 @@ diff_marks %>%
         line_add = if_else(is.na(line_add),0L, line_add)
     ) %>%    
     mutate(
-        prev_interval_remove = map2(.x = (end_remove_prev + 1L), .y = (line_remove-1),.f = function(x, y) x:y),
-        prev_interval_add = map2(.x = (end_add_prev+1), .y = (line_add),.f = function(x, y) x:y)
+        prev_interval_remove = map2(.x = (end_remove_prev + 1L), .y = (line_remove-1L),.f = function(x, y) x:y),
+        prev_interval_add = map2(.x = (end_add_prev+1L), .y = (line_add-1L),.f = function(x, y) x:y)
     ) %>% 
     View()
 
