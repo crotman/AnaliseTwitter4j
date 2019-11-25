@@ -83,7 +83,36 @@ read_pmd_xml <- function(arquivo){
     conteudo
     
 }
+
+
+create_diffs <- function(sha, sha_ant){
+
+
+    temp <- paste0(UUIDgenerate(),".git")
+        
+    shell(paste0("git -C repository/Twitter4J diff ", sha_ant, " ", sha, "  -U0 --patience --numstat --summary --output=", temp))
     
+    temp
+}
+
+create_diff_possibly <- possibly(create_diffs, "erro")
+
+
+create_diffs_single <- function(sha){
+
+    temp <- paste0("c:/temp/",UUIDgenerate(),".git")
+    
+    shell(paste0("git -C repository/Twitter4J diff ", sha, " 4b825dc642cb6eb9a060e54bf8d69288fbee4904  --numstat --output=", temp))
+    
+    temp
+    
+}
+
+create_diffs_single_possibly <- possibly(create_diffs_single, "erro")
+
+    
+
+
 clone("https://github.com/Twitter4J/Twitter4J.git","repository/Twitter4J")
 # 
 repository <- repository("repository/Twitter4j")
@@ -94,8 +123,27 @@ repository <- repository("repository/Twitter4j")
 # 
 # repository <- repository("repository/Twitter4j")
 # 
+
+
+
+# commits <-  commits(repository) %>%
+#     map_df(as_tibble) %>%
+#     mutate(sha_ant = lead(sha)) %>%
+#     mutate(files = future_map2(.x = sha, .y = sha_ant, .f =  create_diff_possibly, .progress = TRUE) )
+# 
+# 
+# write_rds(commits, "diffs/diffs.rds")
+# 
+# teste <- read_rds("diffs/diffs.rds")
+# 
+
 commits <-  commits(repository) %>%
-    map_df(as_tibble)
+    map_df(as_tibble) %>%
+    mutate(files = future_map(.x = sha, .f =  create_diffs_single_possibly, .progress = TRUE) )
+
+write_rds(commits, "diffs/diffs_single.rds")
+
+
 # 
 # commits_alerts <-  commits(repository) %>%
 #     map_dfr(check_out_and_pmd_possibly)
@@ -103,20 +151,20 @@ commits <-  commits(repository) %>%
 # write_rds(commits_alerts,"xmls_alerts")
 # 
 
-read_pmd_xml_possibly <- possibly(read_pmd_xml, otherwise = tibble(sha = "erro"))
-
-
-plan(multiprocess)
-
-alertas <- read_rds("xmls_alerts") %>% 
-    rename(sha_in = sha) %>% 
-    mutate(data = future_map(.x = xml, .f = read_pmd_xml_possibly, .progress = TRUE )) %>% 
-    unnest(data) %>% 
-    mutate(value = str_replace(value,"C:\\\\AnaliseTwitter4j\\\\repository\\\\Twitter4J\\\\", ""))
-
-
-
-write_rds(alertas, "alertas_xml")
+# read_pmd_xml_possibly <- possibly(read_pmd_xml, otherwise = tibble(sha = "erro"))
+# 
+# 
+# plan(multiprocess)
+# 
+# alertas <- read_rds("xmls_alerts") %>% 
+#     rename(sha_in = sha) %>% 
+#     mutate(data = future_map(.x = xml, .f = read_pmd_xml_possibly, .progress = TRUE )) %>% 
+#     unnest(data) %>% 
+#     mutate(value = str_replace(value,"C:\\\\AnaliseTwitter4j\\\\repository\\\\Twitter4J\\\\", ""))
+# 
+# 
+# 
+# write_rds(alertas, "alertas_xml")
 
 
 

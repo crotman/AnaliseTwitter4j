@@ -1,16 +1,36 @@
 library(tidyverse)
 
-lines_prev <- read_table("diff_a.diff",  col_names = c("tudo")) %>% 
+
+# alerts <- read_rds("xml/alertas_xml")
+
+# alerts_commits <- alerts %>% 
+#     filter(str_detect(sha_in, "8376f") )
+
+
+diffs = read_rds("diffs/diffs_single.rds")
+
+sha <- "8376fade8d557896bb9319fb46e39a55b134b166"
+    
+sha_ant <- "e8ac51da7f0b052e70b1b953a5b89680d5962231" 
+
+file_diff_single_ant <- "diffs/07039a34-0f09-11ea-bb95-95fbb242a52c.git"
+
+file_diff_single <- "diffs/0716c6f4-0f09-11ea-bb95-95fbb242a52c.git"
+
+file_diff <- "diffs/5d7aa310-0e66-11ea-9334-35935f559940.git"
+    
+
+lines_prev <- read_table(file_diff_single,  col_names = c("tudo")) %>% 
     separate(tudo, into = c("nothing","lines_prev","file"), sep = "\t") %>% 
     select(-nothing) 
 
 
-lines_post <- read_table("diff_b.diff",  col_names = c("tudo")) %>% 
+lines_post <- read_table(file_diff_single_ant,  col_names = c("tudo")) %>% 
     separate(tudo, into = c("nothing","lines_post","file"), sep = "\t") %>% 
     select(-nothing) 
 
 
-diff_marks <- read_table("testegit.git", col_names = FALSE) %>% 
+diff_marks <- read_table(file_diff, col_names = FALSE) %>% 
     rename(text = 1) %>% 
     mutate(
         marca_inicio_diff = str_detect(text, "diff --git"),
@@ -46,8 +66,8 @@ diff_marks <- read_table("testegit.git", col_names = FALSE) %>%
         ) %>% 
     select(c(-diff,-git)) %>% 
     mutate(
-        file_prev = str_replace(file_prev, "a/",""),
-        file_post = str_replace(file_prev, "b/","")
+        file_post = str_replace(file_post, "b/",""),
+        file_prev = str_replace(file_prev, "a/","")
     ) %>% 
     left_join(lines_prev, by = c("file_prev" = "file")) %>% 
     left_join(lines_post, by = c("file_post" = "file")) %>% 
@@ -70,6 +90,10 @@ diff_marks <- read_table("testegit.git", col_names = FALSE) %>%
         end_remove = line_remove + n_remove - 1L,
         end_add = line_add + n_add - 1L
     ) %>% 
+    mutate(
+        line_remove = if_else(n_remove == 0 | is.na(n_remove) , line_remove+1L, line_remove ),
+        end_remove = if_else(n_remove == 0 | is.na(n_remove) , end_remove+1L, end_remove )
+    ) %>%
     group_by(id_diff) %>% 
     mutate(
         id_diff_id = row_number(),
@@ -77,7 +101,9 @@ diff_marks <- read_table("testegit.git", col_names = FALSE) %>%
     ) %>% 
     ungroup() 
 
-last_diff <- diff_marked %>% 
+
+
+last_diff <- diff_marks %>% 
     group_by(id_diff) %>% 
     summarise(
         line_remove = first(lines_prev) + 1L ,
@@ -96,6 +122,7 @@ last_diff <- diff_marked %>%
     ungroup()
 
 
+
 diff_marks %>% 
     bind_rows(last_diff) %>% 
     arrange(id_diff, id_diff_id) %>% 
@@ -109,11 +136,14 @@ diff_marks %>%
     ) %>% 
     mutate(
         line_add = if_else(is.na(line_add),0L, line_add)
-    ) %>%    
-    mutate(
-        prev_interval_remove = map2(.x = (end_remove_prev + 1L), .y = (line_remove-1L),.f = function(x, y) x:y),
-        prev_interval_add = map2(.x = (end_add_prev+1L), .y = (line_add-1L),.f = function(x, y) x:y)
     ) %>% 
+    filter(!is.na(line_remove )) %>% 
+    mutate(
+        map_remove = map2(.x = (end_remove_prev + 1L), .y = (line_remove - 1L),.f = function(x, y) x:y),
+        map_add = map2(.x = (end_add_prev+1L), .y = (line_add - 1L),.f = function(x, y) x:y)
+    ) %>% 
+    filter(!is.na(lines_post)) %>%
+    unnest(cols = c(map_remove, map_add )) %>% 
     View()
 
 
