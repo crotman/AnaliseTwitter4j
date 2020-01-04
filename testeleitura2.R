@@ -134,7 +134,7 @@ repository <- repository("repository/Twitter4j")
 # 
 # write_rds(commits, "diffs/diffs.rds")
 # 
-# teste <- read_rds("diffs/diffs.rds")
+#teste <- read_rds("diffs/diffs.rds")
 # 
 
 commits <-  commits(repository) %>%

@@ -13,24 +13,24 @@ sha <- "8376fade8d557896bb9319fb46e39a55b134b166"
     
 sha_ant <- "e8ac51da7f0b052e70b1b953a5b89680d5962231" 
 
-file_diff_single_ant <- "diffs/07039a34-0f09-11ea-bb95-95fbb242a52c.git"
+file_diff_single <- "diffs/07039a34-0f09-11ea-bb95-95fbb242a52c.git"
 
-file_diff_single <- "diffs/0716c6f4-0f09-11ea-bb95-95fbb242a52c.git"
+file_diff_single_ant <- "diffs/0716c6f4-0f09-11ea-bb95-95fbb242a52c.git"
 
 file_diff <- "diffs/5d7aa310-0e66-11ea-9334-35935f559940.git"
     
 
-lines_prev <- read_table(file_diff_single,  col_names = c("tudo")) %>% 
+lines_prev <- read_table(file_diff_single_ant,  col_names = c("tudo") ) %>% 
     separate(tudo, into = c("nothing","lines_prev","file"), sep = "\t") %>% 
     select(-nothing) 
 
 
-lines_post <- read_table(file_diff_single_ant,  col_names = c("tudo")) %>% 
+lines_post <- read_table(file_diff_single,  col_names = c("tudo")) %>% 
     separate(tudo, into = c("nothing","lines_post","file"), sep = "\t") %>% 
     select(-nothing) 
 
 
-diff_marks <- read_table(file_diff, col_names = FALSE) %>% 
+diff_marks <- read_table(file_diff, col_names = FALSE ) %>% 
     rename(text = 1) %>% 
     mutate(
         marca_inicio_diff = str_detect(text, "diff --git"),
@@ -63,7 +63,7 @@ diff_marks <- read_table(file_diff, col_names = FALSE) %>%
                 "file_post"
             ), 
         extra = "drop" 
-        ) %>% 
+    ) %>% 
     select(c(-diff,-git)) %>% 
     mutate(
         file_post = str_replace(file_post, "b/",""),
@@ -123,7 +123,7 @@ last_diff <- diff_marks %>%
 
 
 
-diff_marks %>% 
+map <- diff_marks %>% 
     bind_rows(last_diff) %>% 
     arrange(id_diff, id_diff_id) %>% 
     mutate(
@@ -141,10 +141,87 @@ diff_marks %>%
     mutate(
         map_remove = map2(.x = (end_remove_prev + 1L), .y = (line_remove - 1L),.f = function(x, y) x:y),
         map_add = map2(.x = (end_add_prev+1L), .y = (line_add - 1L),.f = function(x, y) x:y)
-    ) %>% 
+    ) %>%
     filter(!is.na(lines_post)) %>%
     unnest(cols = c(map_remove, map_add )) %>% 
+    select(
+        lines_post,
+        lines_prev,
+        file_prev,
+        file_post,
+        map_remove,
+        map_add
+    ) 
+
+
+post_sem_prev <- diff_marks %>% 
+    select(lines_post, file_post, file_prev) %>% 
+    distinct() %>% 
+    replace_na(list(lines_post = 1)) %>% 
+    mutate( lines =  map(.x = lines_post, .f = function(x){tibble(map_add = 1:x)} )) %>% 
+    unnest(lines) %>% 
+    anti_join(map, by = c("file_post","map_add" )) %T>% 
     View()
+
+prev_sem_post <- diff_marks %>% 
+    select(lines_prev, file_prev, file_post) %>% 
+    distinct() %>% 
+    replace_na(list(lines_prev = 1)) %>% 
+    mutate( lines =  map(.x = lines_prev, .f = function(x){tibble(map_remove = 1:x)} )) %>% 
+    unnest(lines) %>% 
+    anti_join(map, by = c("file_post","map_remove" )) %>% 
+    View()
+
+
+
+final_map <- map %>%
+    bind_rows(post_sem_prev) %>%
+    bind_rows(post_sem_post)
+
+
+
+final_map    
+
+
+
+
+
+post_sem_prev_direct_impl <- post_sem_prev  %>%
+    filter(file_post == "twitter4j-core/src/internal-json/java/twitter4j/DirectMessageJSONImpl.java") %T>%
+    View()
+# 
+# 
+# 
+# 
+# 
+# final_map_direct_impl <- final_map %>% 
+#     filter(file_post == "twitter4j-core/src/internal-json/java/twitter4j/DirectMessageJSONImpl.java") %T>%
+#     View()
+#     
+# 
+# 
+# post_sem_prev <- diff_marks %>% 
+#     filter(file_post == "twitter4j-core/src/internal-json/java/twitter4j/DirectMessageJSONImpl.java") %>% 
+#     select(lines_post, file_post, file_prev) %>% 
+#     distinct() %>% 
+#     mutate( lines =  map(.x = lines_post, .f = function(x){tibble(map_add = 1:lines_post)} )) %>% 
+#     unnest(lines) %>%
+#     anti_join(final_map, by = c("file_post","map_add" )) %T>%
+#     View()
+# 
+# 
+# 
+# 
+
+
+
+# final_map %>% 
+#     filter(file_post == "twitter4j-core/src/internal-json/java/twitter4j/DirectMessageJSONImpl.java") %T>%
+#     View()
+    
+
+
+
 
 
 
