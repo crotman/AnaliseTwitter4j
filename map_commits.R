@@ -164,7 +164,11 @@ map_commits <- function(file_diff_single, file_diff_single_ant, file_diff, sha, 
     
     final_map <- map %>%
         bind_rows(post_sem_prev) %>%
-        bind_rows(prev_sem_post)
+        bind_rows(prev_sem_post) %>% 
+        mutate(
+            changed = sum((is.na(map_remove) | is.na(map_add) ))
+        ) 
+    
     
     
     
@@ -201,7 +205,7 @@ diffs <- read_rds("diffs/diffs.rds") %>%
     mutate_at(
         vars(starts_with("file_")),
         function(x) paste0("diffs/", x)    ) %>% 
-    # slice(1:500) %>%
+    slice(1) %>%
     mutate(maps = future_pmap(.l = ., .f = map_commits_possibly, .progress = TRUE )) %>% 
     unnest(maps)
     
@@ -216,7 +220,8 @@ diffs_summary <-
         file_prev,
         file_post,
         map_prev = map_remove, 
-        map_post = map_add
+        map_post = map_add,
+        changed = changed
         
     ) %>% 
     # mutate(
@@ -273,9 +278,9 @@ diffs_with_alerts_prev <- diffs_summary %>%
 
 
 diffs_useful <-  diffs_with_alerts_post %>% 
-    filter(!is.na(rule)) %>% 
+    # filter(!is.na(rule)) %>% 
     bind_rows(diffs_with_alerts_prev) %>% 
-    filter(!is.na(rule)) %>% 
+    # filter(!is.na(rule)) %>% 
     select(sha_post,  sha_prev,  file_prev, file_post, map_prev,  map_post) %>% 
     distinct()
 
@@ -358,7 +363,14 @@ diffs_with_alerts <- diffs_with_alerts_post %>%
 diff_alerts_prev_post <- diffs_with_alerts %>% 
     mutate(id = row_number()) %>% 
     mutate(diff = future_map2(.x = prev, .y = post, .f = diff_alerts_same_line, .progress = TRUE  )) %>% 
-    unnest(diff)
+    unnest(diff) %>% 
+    mutate(
+        changed = if_else(is.na(changed_prev), changed_post, changed_prev)
+    ) %>% 
+    select(
+        -changed_prev,
+        -changed_post
+    )
 
     
 # 
@@ -444,13 +456,31 @@ diff_alerts_prev_post <- diffs_with_alerts %>%
 #     filter(n.x != n.y ) 
 
 
-write_rds(diff_alerts_prev_post, "diff_alerts_prev_post.rds")
+write_rds(diff_alerts_prev_post, "diff_alerts_prev_post_1.rds")
 
 
 
 
 
 
+
+diffs_with_alerts_demo <- diffs_with_alerts_post %>% 
+    full_join(diffs_with_alerts_prev,
+              by = c("sha_post",  "sha_prev",  "file_prev", "file_post", "map_prev",  "map_post")
+    ) %>% 
+    dplyr::mutate(count_prev = future_map_int(.x = prev, .f = count_alerts, .progress = TRUE)) %>% 
+    dplyr::mutate(count_post = future_map_int(.x = post, .f = count_alerts, .progress = TRUE)) %T>% 
+    View()
+    
+
+demo <- diffs_with_alerts_demo %>% 
+    select(
+        file_prev,
+        map_prev,
+        map_post
+    ) %>% 
+    arrange(file_prev, map_post) %T>% 
+    View()
 
 
 

@@ -160,8 +160,7 @@ post_sem_prev <- diff_marks %>%
     replace_na(list(lines_post = 1)) %>% 
     mutate( lines =  map(.x = lines_post, .f = function(x){tibble(map_add = 1:x)} )) %>% 
     unnest(lines) %>% 
-    anti_join(map, by = c("file_post","map_add" )) %T>% 
-    View()
+    anti_join(map, by = c("file_post","map_add" )) 
 
 prev_sem_post <- diff_marks %>% 
     select(lines_prev, file_prev, file_post) %>% 
@@ -169,26 +168,22 @@ prev_sem_post <- diff_marks %>%
     replace_na(list(lines_prev = 1)) %>% 
     mutate( lines =  map(.x = lines_prev, .f = function(x){tibble(map_remove = 1:x)} )) %>% 
     unnest(lines) %>% 
-    anti_join(map, by = c("file_post","map_remove" )) %>% 
-    View()
+    anti_join(map, by = c("file_post","map_remove" )) 
 
 
 
 final_map <- map %>%
     bind_rows(post_sem_prev) %>%
-    bind_rows(post_sem_post)
+    bind_rows(prev_sem_post) %>% 
+    mutate(
+        changed = sum((is.na(map_remove) | is.na(map_add) ))
+    ) 
+    
 
 
 
 final_map    
 
-
-
-
-
-post_sem_prev_direct_impl <- post_sem_prev  %>%
-    filter(file_post == "twitter4j-core/src/internal-json/java/twitter4j/DirectMessageJSONImpl.java") %T>%
-    View()
 # 
 # 
 # 
