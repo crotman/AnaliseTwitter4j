@@ -21,7 +21,7 @@ library(tidyverse)
 library(magrittr)
 library(kableExtra)
 library(knitr)
-
+library(scales)
 
 
 diffs_alerts <- read_rds("diff_alerts_prev_post.rds") 
@@ -148,9 +148,9 @@ alerts_inc %<>%
     
     
 ggplot(alerts_inc, aes(x = changed)) +
-  geom_density() +
-  geom_vline(aes(xintercept = mean(alerts_inc$changed))) +
-  geom_text(aes(x = mean(alerts_inc$changed), y = 0.0025, label = "Mean")) +
+  geom_density(color = "darkblue", size = 1.5) +
+  geom_vline(aes(xintercept = mean(alerts_inc$changed)), color = "darkgreen") +
+  geom_text(aes(x = mean(alerts_inc$changed)+1500, y = 0.0025, label = paste0("Mean: ",mean(alerts_inc$changed) %>% number()) ), color = "darkgreen") +
   theme_minimal()
 
 
