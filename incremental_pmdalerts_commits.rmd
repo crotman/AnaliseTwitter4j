@@ -1,0 +1,164 @@
+---
+title: "Preliminary exploratory analysis: Incremental PMD Alerts + Commits"
+author: "Bruno Crotman"
+date: "02/11/2019"
+output: 
+    pdf_document:
+        toc: true
+        number_sections: true
+        fig_caption: true
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE )
+```
+
+```{r}
+
+
+library(tidyverse)
+library(magrittr)
+library(kableExtra)
+library(knitr)
+
+
+
+diffs_alerts <- read_rds("diff_alerts_prev_post.rds") 
+    
+commits <- read_rds("commits.rds")
+
+commits_with_alerts <- commits %>% 
+    left_join(diffs_alerts, by = c("sha" = "sha_post"))
+
+
+alerts_inc <- commits_with_alerts %>% 
+    group_by(sha,prev_or_post, when, author, prev_or_post) %>% 
+    filter(!is.na(prev_or_post)) %>% 
+    summarise(
+        changed = mean(changed),
+        alerts = n()
+    ) %>% 
+    pivot_wider(
+        names_from = prev_or_post,
+        values_from = c(changed, alerts) 
+    ) %>% 
+    mutate(
+        changed = if_else(is.na(changed_post), changed_prev, changed_post)
+    ) %>% 
+    select(
+        - changed_post,
+        - changed_prev
+    ) %>%
+    replace_na(
+        list(
+            alerts_prev = 0,
+            alerts_post = 0
+        )
+    ) %>%
+    arrange(
+        when
+    ) 
+
+
+```
+
+\section{Incremental alerts and commits}
+
+This report shows how incremental PMD alerts were identified on a Java project. The incremental alerts are those included and excluded in each commit of the Twitter4j project. These are the alerts that begin in lines that were included or excluded from the project in a commit. Lines that are modified are considered excluded from the previous commit code and included in the posterior commit code.
+
+
+\section{Mapping lines of code using diff }
+
+
+A diff was run on each pair of sequential commits.
+
+Using diff information, a map was built for each pair of sequential commits. The map links the line on previous commit with the equivalent line on the posterior commit. The lines that were modified are not mapped to any lines in the other commit of the pair. 
+
+
+Figure \ref{diff} shows an example. New lines are included in the posterior commit: 
+
+- Lines ...-114 in the previous commit are linked to ...-114 in the posterior commit. 
+
+- Lines 115-124 in the posterior commit are not linked with any lines in the previous commit
+
+- Lines 115-... in the previous commit are linked with 125-... in the posterior commit
+
+![Diff example 1: linking lines from previous and posterior commmits \label{diff}](img/diff1.png)
+
+
+Figure \ref{diff2} shows an example. A line is modifies and new lines are included in the posterior commit. The line that is modified is treated as if a line was removed and another one was added: 
+
+- Lines ...-114 in the previous commit are linked to ...-231 in the posterior commit. 
+
+- Line 219 in the previous commit is not linked with any lines in the posterior commit
+
+- Line 250 in the posterior commit is not linked with any lines in the previous commit
+
+- Lines 250-253 in the posterior commit not linked with any lines in the previous commit
+
+- Lines 220-... in the previous commit are linked with 254-... in the posterior commit
+
+
+![Diff example 2: linking lines from previous and posterior commmits \label{diff2}](img/diff2.png)
+
+
+\section{Identifying incremental alerts }
+
+
+PMD alerts are linked to the line of code where the problem begins. So it's possible to identify those alerts that are added or removed in the event of the commit.
+
+In the example on Table \ref{tab1}, we can identify an alert that occurs in a line of code that exists in the posterior version and is not linked to any line in the previous version. So we categorize this alert as a new alert added at the moment of the commit of the posterior version.
+
+```{r}
+
+map <- read_rds("demo") 
+    
+map %>% 
+    mutate(
+        file = paste0("...", str_sub(file, start = -10))
+    ) %>% 
+    kable(caption = "Alert rules linked to previous and posterior lines of code\\label{tab1}") 
+
+
+```
+
+
+\section{Some results}
+
+
+We present the some statistics about the data. 
+
+It´s only a preliminar analysis to gather some properties of the data.
+
+
+
+
+```{r}
+
+alerts_inc %<>% 
+    ungroup() %>% 
+    arrange(when) %>% 
+    mutate(
+        commit = row_number(),
+        alerts_post_rel = alerts_post/changed,
+        alerts_prev_rel = alerts_prev/changed
+    ) 
+    
+    
+    
+ggplot(alerts_inc, aes(x = changed)) +
+  geom_density() +
+  geom_vline(aes(xintercept = mean(alerts_inc$changed))) +
+  geom_text(aes(x = mean(alerts_inc$changed), y = 0.0025, label = "Mean")) +
+  theme_minimal()
+
+
+
+
+
+
+```
+
+
+
