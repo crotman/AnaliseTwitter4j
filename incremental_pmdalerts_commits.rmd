@@ -131,10 +131,10 @@ We present the some statistics about the data.
 
 It´s only a preliminar analysis to gather some properties of the data.
 
+Figure \ref{fig:lines} shows the histogram of the number of lines changed at each commit.
 
 
-
-```{r}
+```{r, fig.cap="\\label{fig:lines}Histogram of changed lines of code"}
 
 alerts_inc %<>% 
     ungroup() %>% 
@@ -148,10 +148,19 @@ alerts_inc %<>%
     
     
 ggplot(alerts_inc, aes(x = changed)) +
-  geom_density(color = "darkblue", size = 1.5) +
+  geom_density(color = "darkblue", size = 1) +
   geom_vline(aes(xintercept = mean(alerts_inc$changed)), color = "darkgreen") +
-  geom_text(aes(x = mean(alerts_inc$changed)+1500, y = 0.0025, label = paste0("Mean: ",mean(alerts_inc$changed) %>% number()) ), color = "darkgreen") +
-  theme_minimal()
+  geom_vline(aes(xintercept = median(alerts_inc$changed)), color = "darkorange") +
+  geom_vline(aes(xintercept = max(alerts_inc$changed)), color = "black") +
+  geom_text(aes(x = 2000, y = 0.0025, label = paste0("Mean: ",mean(alerts_inc$changed) %>% number()) ), color = "darkgreen") +
+  geom_text(aes(x = 2000, y = 0.0015, label = paste0("Median: ",median(alerts_inc$changed) %>% number()) ), color = "darkorange") +
+  geom_text(aes(x = max(alerts_inc$changed)-2000, y = 0.0015, label = paste0("Max: ",max(alerts_inc$changed) %>% number()) ), color = "black") +
+  labs(x = "Lines of code changed") +
+  theme_minimal() +
+  scale_x_continuous(labels = number) +
+  theme(
+    axis.text.y = element_blank()
+  )
 
 
 
@@ -160,5 +169,51 @@ ggplot(alerts_inc, aes(x = changed)) +
 
 ```
 
+```{r}
 
+
+alerts_post_prev <- alerts_inc %>% 
+  mutate(
+    alerts_net = alerts_post_rel - alerts_prev_rel
+  ) %>% 
+  pivot_longer(cols = c("alerts_post_rel", "alerts_prev_rel", "alerts_net"), names_to = "type", values_to = "alerts") %>% 
+  mutate(
+    type = str_remove(type, "alerts_")
+  ) %>% 
+  filter(type == "net")
+
+ggplot(alerts_post_prev) +
+  geom_density(aes(x = alerts  ), size = 1.2) +
+  scale_x_continuous(labels = number_format(accuracy = 0.1)) +
+  theme_minimal()+
+  theme(
+    axis.text.y = element_blank()
+  )
+
+
+
+
+```
+
+```{r}
+
+
+ggplot(alerts_post_prev) +
+  stat_ecdf(aes(x = alerts  ), size = 1.2) +
+  scale_x_continuous(
+    labels = number_format(accuracy = 0.1), 
+    breaks = seq(-1, to = 1, by = 0.2), 
+    minor_breaks = seq(-1, to = 1, by = 0.1) ) +
+  scale_y_continuous(
+    breaks = seq(0, to = 1, by = 0.1), 
+    minor_breaks = seq(0, to = 1, by = 0.1) ) +
+  theme_minimal() +
+  labs(
+    x = "alerts/changed lines",
+    y = "quantile"
+  )
+
+
+
+```
 
