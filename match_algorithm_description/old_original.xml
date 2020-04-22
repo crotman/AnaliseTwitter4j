@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd xmlns="http://pmd.sourceforge.net/report/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.net/report/2.0.0 http://pmd.sourceforge.net/report_2_0_0.xsd"
+    version="6.18.0" timestamp="2020-04-21T20:02:00.899">
+<file name="C:\doutorado\AnaliseTwitter4j\match_algorithm_description\old\code.java">
+<violation beginline="24" endline="24" begincolumn="1" endcolumn="46" rule="UnusedImports" ruleset="Best Practices" package="twitter4j" class="TwitterImpl" externalInfoUrl="https://pmd.github.io/pmd/pmd_rules_java_bestpractices.html#unusedimports" priority="4">
+Avoid unused imports such as 'java.util.concurrent.ConcurrentHashMap'
+</violation>
+<violation beginline="36" endline="36" begincolumn="33" endcolumn="38" rule="UnusedPrivateField" ruleset="Best Practices" package="twitter4j" class="TwitterImpl" variable="logger" externalInfoUrl="https://pmd.github.io/pmd/pmd_rules_java_bestpractices.html#unusedprivatefield" priority="3">
+Avoid unused private fields such as 'logger'.
+</violation>
+<violation beginline="78" endline="78" begincolumn="46" endcolumn="93" rule="OptimizableToArrayCall" ruleset="Performance" package="twitter4j" class="TwitterImpl" method="TwitterImpl" externalInfoUrl="https://pmd.github.io/pmd/pmd_rules_java_performance.html#optimizabletoarraycall" priority="3">
+This call to Collection.toArray() may be optimizable
+</violation>
+<violation beginline="92" endline="92" begincolumn="58" endcolumn="76" rule="FormalParameterNamingConventions" ruleset="Code Style" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" variable="trend_locationWoeid" externalInfoUrl="https://pmd.github.io/pmd/pmd_rules_java_codestyle.html#formalparameternamingconventions" priority="1">
+The method parameter name 'trend_locationWoeid' doesn't match '[a-z][a-zA-Z0-9]*'
+</violation>
+<violation beginline="93" endline="93" begincolumn="58" endcolumn="74" rule="FormalParameterNamingConventions" ruleset="Code Style" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" variable="sleep_timeEnabled" externalInfoUrl="https://pmd.github.io/pmd/pmd_rules_java_codestyle.html#formalparameternamingconventions" priority="1">
+The method parameter name 'sleep_timeEnabled' doesn't match '[a-z][a-zA-Z0-9]*'
+</violation>
+<violation beginline="93" endline="93" begincolumn="84" endcolumn="98" rule="FormalParameterNamingConventions" ruleset="Code Style" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" variable="start_sleepTime" externalInfoUrl="https://pmd.github.io/pmd/pmd_rules_java_codestyle.html#formalparameternamingconventions" priority="1">
+The method parameter name 'start_sleepTime' doesn't match '[a-z][a-zA-Z0-9]*'
+</violation>
+<violation beginline="94" endline="94" begincolumn="57" endcolumn="69" rule="FormalParameterNamingConventions" ruleset="Code Style" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" variable="end_sleepTime" externalInfoUrl="https://pmd.github.io/pmd/pmd_rules_java_codestyle.html#formalparameternamingconventions" priority="1">
+The method parameter name 'end_sleepTime' doesn't match '[a-z][a-zA-Z0-9]*'
+</violation>
+<violation beginline="94" endline="94" begincolumn="79" endcolumn="87" rule="FormalParameterNamingConventions" ruleset="Code Style" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" variable="time_zone" externalInfoUrl="https://pmd.github.io/pmd/pmd_rules_java_codestyle.html#formalparameternamingconventions" priority="1">
+The method parameter name 'time_zone' doesn't match '[a-z][a-zA-Z0-9]*'
+</violation>
+<violation beginline="116" endline="116" begincolumn="19" endcolumn="68" rule="OptimizableToArrayCall" ruleset="Performance" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" externalInfoUrl="https://pmd.github.io/pmd/pmd_rules_java_performance.html#optimizabletoarraycall" priority="3">
+This call to Collection.toArray() may be optimizable
+</violation>
+</file>
+</pmd>

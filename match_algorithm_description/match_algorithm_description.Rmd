@@ -1,0 +1,434 @@
+---
+title: "Match algorithm description"
+author: "Bruno Crotman"
+date: "18/04/2020"
+output: 
+    pdf_document:
+        number_sections: true
+        fig_caption: true
+
+---
+
+```{r setup, include=FALSE}
+
+size_line_of_code <- 160
+
+knitr::opts_chunk$set(echo = TRUE, size = "tiny")
+
+def.chunk.hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) {
+  x <- def.chunk.hook(x, options)
+  ifelse(options$size != "normalsize", paste0("\n \\", options$size,"\n\n", x, "\n\n \\normalsize"), x)
+})
+
+library(xml2)
+library(tidyverse)
+
+```
+
+\section{Introduction}
+
+The goal is to analyze two different versions of a code (an old version and a new version) and decide if 
+
+* each PMD alert generated for the old version is *not fixed* or *fixed* in the new version. When an alert is *not fixed*, it means that it remains in the new version. When an alert is *fixed*, it means that it does not exist anymore in the new version.
+
+* each PMD alert generated for the new version is *not fixed* or *new*. When an alert is *not fixed* it means that the same alert was identified in the old version. When an alert is *new*, it means that the same alert was not identified in the old version.
+
+The alerts identified as *not fixed* are the same in both new and old versions. And the intersection between the *fixed* alerts, the *new* alerts and the *not fixed* alerts is empty.
+
+In order to decide if an alert is *not fixed*, *fixed* or *new*, I must identify if an alert in the old version is equivalent to an alert in the new version.
+
+I describe here two algorithms. The first is a naive algorithm based on matches by lines of code, it was the first to be implemented. The second is a more sophisticated algorithm, based on matches by blocks of code. The second one is not implemented yet.
+
+\section{Matches by line of code}
+
+In this first algorithm, I match the lines of code of the old version with the lines of code of the new version using information from the output of git's diff command. When an alert of the same kind occurs in both matched lines, this alert is declared *not fixed*. The alerts that occur in a not matched line of the old version is declared *fixed* and
+
+```{r, cache=TRUE, echo=FALSE}
+
+
+pmd_path <- "C:\\doutorado\\AnaliseTwitter4j\\pmd\\bin\\pmd.bat"
+
+rule_path <- "rulesets/java/quickstart.xml"
+
+output_path <-  "C:\\doutorado\\AnaliseTwitter4j\\match_algorithm_description\\"
+
+examples <- tribble(
+    
+    ~name,                  ~path,                                                              ~output,          
+    "Versão Old Original",  "C:\\doutorado\\AnaliseTwitter4j\\match_algorithm_description\\old" ,  "old_original",
+    "Versão New 1",         "C:\\doutorado\\AnaliseTwitter4j\\match_algorithm_description\\new",   "new_1"
+    
+) %>% 
+    mutate(id = row_number())
+
+```
+
+
+
+
+```{r, warning=FALSE, message=FALSE, cache=TRUE, echo=FALSE}
+
+assemble_pmd_command <- function(pmd_path, code_path, rule_path, output_path, output){
+    command <- str_glue("{pmd_path} -d {code_path} -f xml -R {rule_path} -reportfile {output_path}{output}.xml")
+}
+
+read_pmd_xml <- function(file){
+    
+    content_xml <- read_xml(file)
+    
+    
+    alerts <- content_xml %>% 
+        xml_children() %>% 
+        xml_children() %>% 
+        xml_attrs() %>% 
+        map_df(.f = ~enframe(x = .x )) %>% 
+        mutate(primeiro_campo = if_else(name == "beginline", 1, 0)  ) %>% 
+        mutate(linha = cumsum(primeiro_campo) ) %>% 
+        select(-primeiro_campo) %>% 
+        pivot_wider(names_from = name, values_from = value) %>% 
+        mutate(id_alert = row_number())
+
+}
+
+
+
+examples_executed <- examples %>% 
+    mutate(
+        pmd_command = 
+            map2(
+                .x = path, 
+                .y = output, 
+                ~assemble_pmd_command(
+                    pmd_path = pmd_path, 
+                    code_path = .x , 
+                    rule_path = rule_path, 
+                    output_path = output_path, 
+                    output =.y
+                )
+            )
+        ) %>% 
+    mutate(
+        pmd_command_output = map(.x = pmd_command, .f =  ~shell(cmd = .x, shell = "PowerShell"))
+    ) %>% 
+    mutate(
+        pmd_output = map(.x = str_glue("{output_path}{output}.xml"), .f = read_pmd_xml )
+    )
+
+examples_executed_selected_fields_left <- examples_executed %>% select(id, name, path, output ) %>% 
+    rename_all(.funs = function(x){str_glue("{x}_left")})
+
+examples_executed_selected_fields_right <- examples_executed %>% select(id, name, path, output ) %>% 
+    rename_all(.funs = function(x){str_glue("{x}_right")})
+
+
+assemble_diff_command <- function(code_path_left, code_path_right, output_path, output_left, output_right){
+    str_glue("git diff -U0 --patience --numstat --summary --output={output_path}{output_left}_{output_right}.diff --no-index {code_path_left} {code_path_right}")
+}
+
+read_number_of_lines <- function(dir){
+
+    files <- list.files(dir)
+
+    read_table(file = str_glue("{dir}\\{files}"), col_names = FALSE, skip_empty_rows = FALSE) %>% 
+        nrow() 
+}
+
+
+
+map_lines <- function(file, lines_prev_param, lines_post_param){
+    
+    file <- "C:\\doutorado\\AnaliseTwitter4j\\match_algorithm_description\\old_original_new_1.diff"
+
+    lines_prev_param <- as.integer(lines_prev_param)
+    
+    lines_post_param <- as.integer(lines_post_param)
+
+    diff_marks <- read_table(file, col_names = FALSE ) %>% 
+        rename(text = 1) %>% 
+        mutate(
+            marca_inicio_diff = str_detect(text, "diff --git"),
+            id_diff = cumsum(marca_inicio_diff),
+            diff_title = if_else(marca_inicio_diff, text, NA_character_)
+        ) %>% 
+        select(-marca_inicio_diff) %>% 
+        fill(diff_title, .direction = "down") %>% 
+        filter(str_starts(text, "@@")) %>% 
+        separate(text, sep = " ", into = c("mark", "minus", "plus"), extra = "drop" ) %>% 
+        select(-mark) %>% 
+        separate(minus, into = c("line_remove", "n_remove"), sep = ",") %>% 
+        separate(plus, into = c("line_add", "n_add"), sep = ",") %>% 
+        mutate(
+            n_remove = if_else(is.na(n_remove),"1",n_remove),
+            n_add = if_else(is.na(n_add),"1",n_add)
+        ) %>% 
+        mutate(
+            line_remove = str_remove(line_remove,"\\-") %>% str_trim(),
+            line_add = str_remove(line_add,"\\+" %>% str_trim())
+        ) %>% 
+        separate(
+            diff_title, 
+            sep = " ", 
+            into = 
+                c(
+                    "diff", 
+                    "git", 
+                    "file_prev",
+                    "file_post"
+                ), 
+            extra = "drop" 
+        ) %>% 
+        select(c(-diff,-git)) %>% 
+        mutate(
+            file_post = str_replace(file_post, "b/",""),
+            file_prev = str_replace(file_prev, "a/","")
+        ) %>% 
+        mutate(
+            lines_prev = lines_prev_param,
+            lines_post = lines_post_param
+        ) %>%    
+        mutate_at(
+            vars(ends_with("_add")),
+            as.integer
+        ) %>% 
+        mutate_at(
+            vars(ends_with("_remove")),
+            as.integer
+        ) %>% 
+        mutate(
+            line_add = if_else(n_add == 0, line_add + 1L, line_add)
+        ) %>% 
+        mutate(
+            end_remove = line_remove + n_remove - 1L,
+            end_add = line_add + n_add - 1L
+        ) %>% 
+        mutate(
+            line_remove = if_else(n_remove == 0 | is.na(n_remove) , line_remove+1L, line_remove ),
+            end_remove = if_else(n_remove == 0 | is.na(n_remove) , end_remove+1L, end_remove )
+        ) %>%
+        group_by(id_diff) %>% 
+        mutate(
+            id_diff_id = row_number(),
+            n_diff = n()
+        ) %>% 
+        ungroup() 
+    
+    
+    last_diff <- diff_marks %>% 
+        group_by(id_diff) %>% 
+        summarise(
+            line_remove = first(lines_prev) + 1L ,
+            n_remove = NA,
+            line_add = first(lines_post) + 1L ,
+            n_add = NA,
+            file_prev = first(file_prev),
+            file_post = first(file_post),
+            lines_prev = first(lines_prev),
+            lines_post = first(lines_post),
+            end_remove = NA,
+            end_add = NA,
+            id_diff_id = last(id_diff_id) + 1L,
+            n_diff = first(n_diff)
+        ) %>% 
+        ungroup()
+    
+    map <- diff_marks %>% 
+        bind_rows(last_diff) %>% 
+        arrange(id_diff, id_diff_id) %>% 
+        mutate(
+            end_remove_prev = lag(end_remove),
+            end_add_prev = lag(end_add)
+        ) %>% 
+        mutate(
+            end_remove_prev = if_else(is.na(end_remove_prev),0L, end_remove_prev),
+            end_add_prev = if_else(is.na(end_add_prev),0L, end_add_prev)
+        ) %>% 
+        mutate(
+            line_add = if_else(is.na(line_add),0L, line_add)
+        ) %>% 
+        filter(!is.na(line_remove )) %>% 
+        mutate(
+            map_remove = map2(.x = (end_remove_prev + 1L), .y = (line_remove - 1L),.f = function(x, y) x:y),
+            map_add = map2(.x = (end_add_prev+1L), .y = (line_add - 1L),.f = function(x, y) x:y)
+        ) %>%
+        filter(!is.na(lines_post)) %>%
+        unnest(cols = c(map_remove, map_add )) %>% 
+        select(
+            lines_post,
+            lines_prev,
+            file_prev,
+            file_post,
+            map_remove,
+            map_add
+        ) 
+    
+    
+    post_sem_prev <- diff_marks %>% 
+        select(lines_post, file_post, file_prev) %>% 
+        distinct() %>% 
+        replace_na(list(lines_post = 1)) %>% 
+        mutate( lines =  map(.x = lines_post, .f = function(x){tibble(map_add = 1:x)} )) %>% 
+        unnest(lines) %>% 
+        anti_join(map, by = c("file_post","map_add" )) 
+    
+    prev_sem_post <- diff_marks %>% 
+        select(lines_prev, file_prev, file_post) %>% 
+        distinct() %>% 
+        replace_na(list(lines_prev = 1)) %>% 
+        mutate( lines =  map(.x = lines_prev, .f = function(x){tibble(map_remove = 1:x)} )) %>% 
+        unnest(lines) %>% 
+        anti_join(map, by = c("file_post","map_remove" )) 
+    
+    
+    
+    final_map <- map %>%
+        bind_rows(post_sem_prev) %>%
+        bind_rows(prev_sem_post) %>% 
+        mutate(
+            changed = sum((is.na(map_remove) | is.na(map_add) ))
+        ) %>% 
+        rowwise() %>% 
+        mutate(
+            min_map = min(c(map_remove, map_add), na.rm = TRUE)
+        ) %>%
+        arrange(min_map)        
+    
+    
+    
+
+}
+
+
+examples_crossed <- examples_executed_selected_fields_left %>%
+    crossing(examples_executed_selected_fields_right) %>%
+    filter(
+        id_left < id_right
+    ) %>% 
+    mutate(
+        diff_command = 
+            map2(
+                .x = path_left, 
+                .y = path_right, 
+                ~assemble_diff_command(
+                    code_path_left = .x, 
+                    code_path_right = .y, 
+                    output_path = output_path, 
+                    output_left = output_left, 
+                    output_right = output_right
+                )
+            )
+    ) %>% 
+    mutate(
+        lines_left = read_number_of_lines(path_left),
+        lines_right = read_number_of_lines(path_right)
+    ) %>% 
+    mutate(
+        output_diff_command = map(.x = diff_command, .f = ~shell(cmd = .x, shell = "PowerShell")),
+        file_diff = str_glue("{output_path}{output_left}_{output_right}.diff")
+    ) %>% 
+    mutate(
+        pmap(.l = list(file = file_diff  , lines_prev_param = lines_left, lines_post_param = lines_right), .f = map_lines  )
+    )
+    
+
+
+```
+
+```{r, echo=FALSE}
+
+decorate_code <- function(strings){
+    strings %>% 
+        enframe(name = "line", value = "code") %>% 
+        mutate(
+            line = as.character(line) %>%  str_pad(width = 3, side = "left"),
+            code = code %>%  str_trunc(width = 90, ellipsis = "..."),
+            final_code = str_glue("/*{line}*/{code}") 
+        ) %>% 
+        pull(final_code)
+}
+
+
+decorate_code_and_alerts <- function(strings, alerts){
+    
+    alert <- alerts %>%
+        as_tibble() %>% 
+        select(beginline, rule) %>% 
+        mutate(
+            beginline = as.integer(beginline)
+        )
+    
+
+    max_rule <- alert %>% 
+        pull(rule) %>% 
+        str_length() %>% 
+        max(na.rm = TRUE)
+        
+    
+    strings %>% 
+        enframe(name = "line", value = "code") %>% 
+        left_join(
+            alert,
+            by = c("line" = "beginline")
+        ) %>% 
+        replace_na(
+            list(rule = "")
+        ) %>% 
+        mutate(
+            line = as.character(line) %>%  str_pad(width = 3, side = "left"),
+            code = code %>%  str_trunc(width = 90-32, ellipsis = "..."),
+            rule = rule %>% str_pad(width = 32, side = "right" ),
+            final_code = str_glue("/*{line}-{rule}*/{code}") 
+        ) %>% 
+        pull(final_code) %>% 
+        view()
+}
+
+
+read_and_decorate_code <-  function(file){
+    read_lines(file) %>% 
+        decorate_code() %>% 
+        as.character()
+}
+
+
+
+read_and_decorate_code_and_alerts <-  function(file, alerts){
+    read_lines(file) %>% 
+        decorate_code_and_alerts(alerts = alerts) %>% 
+        as.character()
+}
+
+
+
+```
+
+
+The old version is the following code
+
+```{java code=read_and_decorate_code("old/code.java") }
+
+
+```
+
+The old version with alerts
+
+
+```{java code=read_and_decorate_code_and_alerts("old/code.java", examples_executed$pmd_output[[1]]) }
+
+```
+
+
+
+
+The new version is the following code. I removed the line 24 "import java.util.concurrent.ConcurrentHashMap". 
+
+```{java code=read_and_decorate_code("new/code.java"), size="tiny" }
+
+
+```
+    
+
+
+
+
+
