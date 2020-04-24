@@ -11,7 +11,13 @@ output:
 
 ```{r setup, include=FALSE}
 
+library(xml2)
+library(tidyverse)
+library(gt)
+
 size_line_of_code <- 160
+
+length_alert_name <- 35
 
 knitr::opts_chunk$set(echo = TRUE, size = "tiny")
 
@@ -21,8 +27,6 @@ knitr::knit_hooks$set(chunk = function(x, options) {
   ifelse(options$size != "normalsize", paste0("\n \\", options$size,"\n\n", x, "\n\n \\normalsize"), x)
 })
 
-library(xml2)
-library(tidyverse)
 
 ```
 
@@ -67,7 +71,7 @@ examples <- tribble(
 
 
 
-```{r, warning=FALSE, message=FALSE, cache=TRUE, echo=FALSE}
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
 
 assemble_pmd_command <- function(pmd_path, code_path, rule_path, output_path, output){
     command <- str_glue("{pmd_path} -d {code_path} -f xml -R {rule_path} -reportfile {output_path}{output}.xml")
@@ -289,7 +293,7 @@ map_lines <- function(file, lines_prev_param, lines_post_param){
         ) %>% 
         rowwise() %>% 
         mutate(
-            min_map = min(c(map_remove, map_add), na.rm = TRUE)
+            min_map = max(c(map_remove, map_add), na.rm = TRUE)
         ) %>%
         arrange(min_map)        
     
@@ -327,7 +331,7 @@ examples_crossed <- examples_executed_selected_fields_left %>%
         file_diff = str_glue("{output_path}{output_left}_{output_right}.diff")
     ) %>% 
     mutate(
-        pmap(.l = list(file = file_diff  , lines_prev_param = lines_left, lines_post_param = lines_right), .f = map_lines  )
+        lines_map = pmap(.l = list(file = file_diff  , lines_prev_param = lines_left, lines_post_param = lines_right), .f = map_lines  )
     )
     
 
@@ -341,22 +345,40 @@ decorate_code <- function(strings){
         enframe(name = "line", value = "code") %>% 
         mutate(
             line = as.character(line) %>%  str_pad(width = 3, side = "left"),
-            code = code %>%  str_trunc(width = 90, ellipsis = "..."),
-            final_code = str_glue("/*{line}*/{code}") 
+            code = code %>%  str_trunc(width = size_line_of_code, ellipsis = "..."),
+             final_code = str_glue("/*{line}*/{code}") 
         ) %>% 
         pull(final_code)
 }
 
 
-decorate_code_and_alerts <- function(strings, alerts){
-    
-    alert <- alerts %>%
-        as_tibble() %>% 
-        select(beginline, rule) %>% 
+aggregate_alerts_by_line <- function(alerts){
+
+  alerts %>% 
         mutate(
             beginline = as.integer(beginline)
+        ) %>% 
+        group_by(
+            beginline,
+            rule
+        ) %>% 
+        summarise(
+            n = n()
+        ) %>% 
+        mutate(
+            rule = if_else(n == 1, rule, str_glue("{rule}({n})") %>% as.character()  )
         )
-    
+
+}
+
+decorate_code_and_alerts <- function(strings, alerts){
+
+    alert <- alerts %>%
+        as_tibble() %>% 
+        select(beginline, rule) %>%
+        aggregate_alerts_by_line()
+      
+
 
     max_rule <- alert %>% 
         pull(rule) %>% 
@@ -375,17 +397,93 @@ decorate_code_and_alerts <- function(strings, alerts){
         ) %>% 
         mutate(
             line = as.character(line) %>%  str_pad(width = 3, side = "left"),
-            code = code %>%  str_trunc(width = 90-32, ellipsis = "..."),
-            rule = rule %>% str_pad(width = 32, side = "right" ),
+            code = code %>%  str_trunc(width = size_line_of_code - length_alert_name, ellipsis = "..."),
+            rule = rule %>% str_pad(width = length_alert_name, side = "right" ),
             final_code = str_glue("/*{line}-{rule}*/{code}") 
         ) %>% 
-        pull(final_code) %>% 
-        view()
+        pull(final_code) 
+}
+
+
+decorate_code_alerts_mapped <- function(strings_old_param, alerts_old_param, strings_new_param, alerts_new_param, map_param){
+
+
+  map <- map_param %>%
+    select(
+      line_old = map_remove,
+      line_new = map_add
+    )
+
+  strings_old <- strings_old_param %>% enframe(name = "line_old", value = "code_old") %>% replace_na(list(code_old = ""))
+
+  alerts_old <- alerts_old_param %>%
+    aggregate_alerts_by_line() %>%
+    select(line_old = beginline, rule_old = rule )
+
+  strings_new <- strings_new_param %>% enframe(name = "line_new", value = "code_new") %>% replace_na(list(code_new = ""))
+
+  alerts_new <- alerts_new_param %>%
+    aggregate_alerts_by_line() %>%
+    select(line_new = beginline, rule_new = rule )
+
+
+  saida <- map %>%
+    left_join(
+      strings_old,
+      by = c("line_old")
+    ) %>%
+    left_join(
+      alerts_old,
+      by = c("line_old")
+    ) %>%
+    left_join(
+      strings_new,
+      by = c("line_new")
+    ) %>%
+    left_join(
+      alerts_new,
+      by = c("line_new")
+    ) %>%
+    mutate(
+      line_old = as.character(line_old),
+      line_new = as.character(line_new)
+    ) %>% 
+    replace_na(
+      list(
+        code_new = "/*XXXXXXXXXXXXXXXXX*/",
+        code_old = "/*XXXXXXXXXXXXXXXXX*/",
+        line_old = "",
+        line_new = "",
+        code_old = "",
+        code_new = "",
+        rule_old = "",
+        rule_new = ""
+      )
+    ) %>%
+    mutate(
+      line_old = line_old %>%  str_pad(width = 3, side = "left"),
+      line_new = line_new %>%  str_pad(width = 3, side = "left"),
+      code_old = code_old %>%  
+        str_trunc(width = size_line_of_code/2 - length_alert_name, ellipsis = "") %>% 
+        str_pad(size_line_of_code/2 - length_alert_name, side = "right"),
+      
+      code_new = code_new %>%  
+        str_trunc(width = size_line_of_code/2 - length_alert_name, ellipsis = "") %>%  
+        str_pad(width = size_line_of_code/2 - length_alert_name, side = "right"),
+      
+      rule_old = rule_old %>% str_pad(width = length_alert_name, side = "right" ),
+      rule_new = rule_new %>% str_pad(width = length_alert_name, side = "right" ),
+      final_code = str_glue("/*{line_old}-{rule_old}*/{code_old}/*{line_new}-{rule_new}*/{code_new}")
+    ) %>%
+    pull(final_code)
+
+  
+
 }
 
 
 read_and_decorate_code <-  function(file){
-    read_lines(file) %>% 
+    read_lines(file, ) %>% 
         decorate_code() %>% 
         as.character()
 }
@@ -400,17 +498,26 @@ read_and_decorate_code_and_alerts <-  function(file, alerts){
 
 
 
+read_and_decorate_code_and_alerts_mapped <-  function(file_old, alerts_old, file_new, alerts_new, map){
+    strings_new <- read_lines(file_new)
+    strings_old <- read_lines(file_old)
+    
+    decorate_code_alerts_mapped(
+      strings_old_param = strings_old,
+      strings_new_param = strings_new,
+      alerts_old_param = alerts_old,
+      alerts_new_param = alerts_new,
+      map_param = map
+    ) %>% 
+      as.character() 
+  
+}
+
+
 ```
 
 
-The old version is the following code
-
-```{java code=read_and_decorate_code("old/code.java") }
-
-
-```
-
-The old version with alerts
+The old version, with the alerts generated by PMI, is the following code
 
 
 ```{java code=read_and_decorate_code_and_alerts("old/code.java", examples_executed$pmd_output[[1]]) }
@@ -418,15 +525,51 @@ The old version with alerts
 ```
 
 
+The new version is the following code: 
+
+* line 24 of the old version "import java.util.concurrent.ConcurrentHashMap", that was a "Unused Import", was removed. 
+* line 92 of the old version (91 of the new version) was fixed by changing the name of the parameter
+* line 119 was included in the new version, with an unused private field.
 
 
-The new version is the following code. I removed the line 24 "import java.util.concurrent.ConcurrentHashMap". 
-
-```{java code=read_and_decorate_code("new/code.java"), size="tiny" }
+```{java code=read_and_decorate_code_and_alerts("new/code.java", examples_executed$pmd_output[[2]]) }
 
 
 ```
     
+The result of the git diff operation upon this two versions is this:
+
+
+```{diff code=readLines("old_original_new_1.diff")}
+
+
+```
+
+
+Using this information from git's diff, it's possible to create a map between the lines of the old version and the new version:
+
+
+```{r}
+
+examples_crossed$lines_map[[1]] %>% 
+  select(old = map_remove, new = map_add) %>% 
+  gt() %>% 
+  tab_header(title = "Lines map", subtitle = "Map between lines in the old version and in te new version")
+
+
+```
+
+
+Now we can connect the to versions and plugin the alerts
+
+
+
+```{java code=read_and_decorate_code_and_alerts_mapped("old/code.java", examples_executed$pmd_output[[1]], "new/code.java", examples_executed$pmd_output[[2]],examples_crossed$lines_map[[1]])  }
+
+```
+
+
+
 
 
 

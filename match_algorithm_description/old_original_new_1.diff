@@ -1,21 +1,19 @@
-4	8	j/match_algorithm_description/{old => new}/code.java
+5	4	j/match_algorithm_description/{old => new}/code.java
 
 diff --git a/j/match_algorithm_description/old/code.java b/j/match_algorithm_description/new/code.java
-index 99a524c..3d40441 100644
+index 33a26b4..ed77b15 100644
 --- a/j/match_algorithm_description/old/code.java
 +++ b/j/match_algorithm_description/new/code.java
 @@ -24 +23,0 @@ import java.util.*;
 -import java.util.concurrent.ConcurrentHashMap;
-@@ -92,2 +91,2 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
+@@ -92 +91 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
 -    public AccountSettings updateAccountSettings(Integer trend_locationWoeid,
--                                                 Boolean sleep_timeEnabled, String start_sleepTime,
-+    public AccountSettings updateAccountSettings(Integer trendLocationWoeid,
-+                                                 Boolean sleep_time_enabled, String start_sleepTime,
-@@ -97,5 +96,2 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
++    public AccountSettings updateAccountSettings(Integer trendlocationWoeid,
+@@ -97,2 +96,2 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
 -        if (trend_locationWoeid != null) {
 -            profile.add(new HttpParameter("trend_location_woeid", trend_locationWoeid));
--        }
--        if (sleep_timeEnabled != null) {
--            profile.add(new HttpParameter("sleep_time_enabled", sleep_timeEnabled.toString()));
-+        if (sleep_time_enabled != null) {
-+            profile.add(new HttpParameter("sleep_timeEnabled", sleep_time_enabled.toString()));
++        if (trendlocationWoeid != null) {
++            profile.add(new HttpParameter("trend_location_woeid", trendlocationWoeid));
+@@ -119,0 +119,2 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
++    private int not_used = 0;
++

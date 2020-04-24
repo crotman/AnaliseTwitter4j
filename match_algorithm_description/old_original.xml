@@ -2,7 +2,7 @@
 <pmd xmlns="http://pmd.sourceforge.net/report/2.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://pmd.sourceforge.net/report/2.0.0 http://pmd.sourceforge.net/report_2_0_0.xsd"
-    version="6.18.0" timestamp="2020-04-21T20:02:00.899">
+    version="6.18.0" timestamp="2020-04-23T21:43:14.096">
 <file name="C:\doutorado\AnaliseTwitter4j\match_algorithm_description\old\code.java">
 <violation beginline="24" endline="24" begincolumn="1" endcolumn="46" rule="UnusedImports" ruleset="Best Practices" package="twitter4j" class="TwitterImpl" externalInfoUrl="https://pmd.github.io/pmd/pmd_rules_java_bestpractices.html#unusedimports" priority="4">
 Avoid unused imports such as 'java.util.concurrent.ConcurrentHashMap'

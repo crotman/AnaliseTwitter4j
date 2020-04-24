@@ -88,13 +88,16 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
 
     
     @Override
-    public AccountSettings updateAccountSettings(Integer trendLocationWoeid,
-                                                 Boolean sleep_time_enabled, String start_sleepTime,
+    public AccountSettings updateAccountSettings(Integer trendlocationWoeid,
+                                                 Boolean sleep_timeEnabled, String start_sleepTime,
                                                  String end_sleepTime, String time_zone, String lang)
             throws TwitterException {
         List<HttpParameter> profile = new ArrayList<HttpParameter>(6);
-        if (sleep_time_enabled != null) {
-            profile.add(new HttpParameter("sleep_timeEnabled", sleep_time_enabled.toString()));
+        if (trendlocationWoeid != null) {
+            profile.add(new HttpParameter("trend_location_woeid", trendlocationWoeid));
+        }
+        if (sleep_timeEnabled != null) {
+            profile.add(new HttpParameter("sleep_time_enabled", sleep_timeEnabled.toString()));
         }
         if (start_sleepTime != null) {
             profile.add(new HttpParameter("start_sleep_time", start_sleepTime));
@@ -112,5 +115,7 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
                 , profile.toArray(new HttpParameter[profile.size()])));
 
     }
+
+    private int not_used = 0;
 
 }
