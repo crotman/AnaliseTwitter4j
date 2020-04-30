@@ -466,73 +466,75 @@ categorise_alerts <- function(map, alerts_old, alerts_new){
 ```{r execution of alerts and map, echo=FALSE  }
 
 
-examples_executed <- examples %>% 
-    mutate(
-        pmd_command = 
-            map2(
-                .x = path, 
-                .y = output, 
-                ~assemble_pmd_command(
-                    pmd_path = pmd_path, 
-                    code_path = .x , 
-                    rule_path = rule_path, 
-                    output_path = output_path, 
-                    output =.y
-                )
-            )
-        ) %>% 
-    mutate(
-        pmd_command_output = map(.x = pmd_command, .f =  ~shell(cmd = .x, shell = "PowerShell"))
-    ) %>% 
-    mutate(
-        pmd_output = map(.x = str_glue("{output_path}{output}.xml"), .f = read_pmd_xml )
+
+examples_executed <- examples %>%
+    mutate(pmd_command =
+               map2(
+                   .x = path,
+                   .y = output,
+                   ~ assemble_pmd_command(
+                       pmd_path = pmd_path,
+                       code_path = .x ,
+                       rule_path = rule_path,
+                       output_path = output_path,
+                       output = .y
+                   )
+               )) %>%
+    mutate(pmd_command_output = map(
+        .x = pmd_command,
+        .f =  ~ shell(cmd = .x, shell = "PowerShell")
+    )) %>%
+    mutate(pmd_output = map(.x = str_glue("{output_path}{output}.xml"), .f = read_pmd_xml))
+
+examples_executed_selected_fields_left <-
+    examples_executed %>% select(id, name, path, output) %>%
+    rename_all(
+        .funs = function(x) {
+            str_glue("{x}_left")
+        }
     )
 
-examples_executed_selected_fields_left <- examples_executed %>% select(id, name, path, output ) %>% 
-    rename_all(.funs = function(x){str_glue("{x}_left")})
-
-examples_executed_selected_fields_right <- examples_executed %>% select(id, name, path, output ) %>% 
-    rename_all(.funs = function(x){str_glue("{x}_right")})
+examples_executed_selected_fields_right <-
+    examples_executed %>% select(id, name, path, output) %>%
+    rename_all(
+        .funs = function(x) {
+            str_glue("{x}_right")
+        }
+    )
 
 
 examples_crossed <- examples_executed_selected_fields_left %>%
     crossing(examples_executed_selected_fields_right) %>%
-    filter(
-        id_left < id_right
-    ) %>% 
+    filter(id_left < id_right) %>%
+    mutate(diff_command =
+               map2(
+                   .x = path_left,
+                   .y = path_right,
+                   ~ assemble_diff_command(
+                       code_path_left = .x,
+                       code_path_right = .y,
+                       output_path = output_path,
+                       output_left = output_left,
+                       output_right = output_right
+                   )
+               )) %>%
+    mutate(lines_left = read_number_of_lines(path_left),
+           lines_right = read_number_of_lines(path_right)) %>%
     mutate(
-        diff_command = 
-            map2(
-                .x = path_left, 
-                .y = path_right, 
-                ~assemble_diff_command(
-                    code_path_left = .x, 
-                    code_path_right = .y, 
-                    output_path = output_path, 
-                    output_left = output_left, 
-                    output_right = output_right
-                )
-            )
-    ) %>% 
-    mutate(
-        lines_left = read_number_of_lines(path_left),
-        lines_right = read_number_of_lines(path_right)
-    ) %>% 
-    mutate(
-        output_diff_command = map(.x = diff_command, .f = ~shell(cmd = .x, shell = "PowerShell")),
+        output_diff_command = map(
+            .x = diff_command,
+            .f = ~ shell(cmd = .x, shell = "PowerShell")
+        ),
         file_diff = str_glue("{output_path}{output_left}_{output_right}.diff")
-    ) %>% 
-    mutate(
-        lines_map = pmap(
-          .l = list(
-            file = file_diff  , 
-            lines_prev_param = lines_left, 
+    ) %>%
+    mutate(lines_map = pmap(
+        .l = list(
+            file = file_diff  ,
+            lines_prev_param = lines_left,
             lines_post_param = lines_right
-          ), 
-          .f = map_lines  
-        )
-    )
-    
+        ),
+        .f = map_lines
+    ))
 
 
 
@@ -540,215 +542,302 @@ examples_crossed <- examples_executed_selected_fields_left %>%
 
 ```{r decoration functions, echo=FALSE}
 
-decorate_code <- function(strings){
-    strings %>% 
-        enframe(name = "line", value = "code") %>% 
+
+decorate_code <- function(strings) {
+    strings %>%
+        enframe(name = "line", value = "code") %>%
         mutate(
             line = as.character(line) %>%  str_pad(width = 3, side = "left"),
             code = code %>%  str_trunc(width = size_line_of_code, ellipsis = "..."),
-             final_code = str_glue("/*{line}*/{code}") 
-        ) %>% 
+            final_code = str_glue("/*{line}*/{code}")
+        ) %>%
         pull(final_code)
 }
 
 
-aggregate_alerts_by_line <- function(alerts, trunc_rule_length_param = NA_real_){
+aggregate_alerts_by_line <-
+    function(alerts, trunc_rule_length_param = NA_real_) {
+        trunc_rule_length <-
+            if_else(is.na(trunc_rule_length_param),
+                    10,
+                    trunc_rule_length_param)
+        
+        alerts %>%
+            mutate(beginline = as.integer(beginline)) %>%
+            group_by(beginline,
+                     rule) %>%
+            summarise(n = n()) %>%
+            mutate(rule = if_else(
+                is.na(trunc_rule_length_param),
+                rule,
+                str_trunc(
+                    rule,
+                    width = trunc_rule_length,
+                    side = "right",
+                    ellipsis = ""
+                ) %>% as.character()
+            )) %>%
+            mutate(rule = if_else(n == 1, rule, str_glue("{rule}({n})") %>% as.character()))
+        
+    }
 
-  
-  trunc_rule_length <- if_else(is.na(trunc_rule_length_param), 10, trunc_rule_length_param)
+decorate_code_and_alerts <-
+    function(strings,
+             alerts,
+             region_only = FALSE,
+             region_size = 3) {
 
-  alerts %>% 
-    mutate(
-        beginline = as.integer(beginline)
-    ) %>% 
-    group_by(
-        beginline,
-        rule
-    ) %>% 
-    summarise(
-        n = n()
-    ) %>%
-    mutate(
-      rule = if_else(
-        is.na(trunc_rule_length_param), 
-        rule, 
-        str_trunc(rule, width = trunc_rule_length, side = "right", ellipsis = "") %>% as.character()
-      )
-    ) %>% 
-    mutate(
-        rule = if_else(n == 1, rule, str_glue("{rule}({n})") %>% as.character()  )
-    )
+        # for debug
+        # strings <- read_lines("old/code.java")
+        # alerts <- examples_executed$pmd_output[[1]]
+        # region_only = TRUE
+        # region_size = 3
+        
+        alert <- alerts %>%
+            as_tibble() %>%
+            select(beginline, rule) %>%
+            aggregate_alerts_by_line()
+        
+        
+        
+        max_rule <- alert %>%
+            pull(rule) %>%
+            str_length() %>%
+            max(na.rm = TRUE)
+        
+        
+        strings %>%
+            enframe(name = "line", value = "code") %>%
+            left_join(alert,
+                      by = c("line" = "beginline")) %>%
+            mutate(
+                 alert_mark_up = if_else(is.na(rule), NA_integer_, line ),  
+                 alert_mark_down = if_else(is.na(rule), NA_integer_, line )  
+            ) %>%
+            fill(
+                alert_mark_up,
+                .direction = "up"
+            ) %>% 
+            fill(
+                alert_mark_down,
+                .direction = "down"
+            ) %>% 
+            replace_na(
+                list(
+                    alert_mark_down = 0,
+                    alert_mark_up = length(strings)
+                )
+            ) %>% 
+            mutate(
+                dist_up = line - alert_mark_down,
+                dist_down = alert_mark_up - line
+            ) %>% 
+            rowwise() %>%
+            mutate(
+                min_dist = min(dist_up, dist_down)
+            ) %>% 
+            mutate(
+                code = if_else(min_dist == region_size + 1, "/* ...  */", code )
+            ) %>% 
+            filter(
+                min_dist <= region_size + 1
+            ) %>% 
+            ungroup() %>% 
+            replace_na(list(rule = "")) %>%
+            mutate(
+                line = as.character(line) %>%  str_pad(width = 3, side = "left"),
+                code = code %>%  str_trunc(width = size_line_of_code - length_alert_name, ellipsis = "..."),
+                rule = rule %>% str_pad(width = length_alert_name, side = "right"),
+                final_code = str_glue("/*{line}-{rule}*/{code}")
+            ) %>%
+            pull(final_code)
+    }
 
-}
+decorate_code_alerts_mapped <-
+    function(strings_old_param,
+             alerts_old_param,
+             strings_new_param,
+             alerts_new_param,
+             map_param,
+             region_only = FALSE,
+             region_size = 3) {
+        # for debug
+        strings_old_param <-  read_lines("old/code.java")
+        strings_new_param <-  read_lines("new/code.java")
+        alerts_old_param <-  examples_executed$pmd_output[[1]]
+        alerts_new_param <-  examples_executed$pmd_output[[2]]
+        map_param <-  examples_crossed$lines_map[[1]]
+        region_only = FALSE
+        region_size = 3      
+     
 
-decorate_code_and_alerts <- function(strings, alerts){
+        map <- map_param %>%
+            select(line_old = map_remove,
+                   line_new = map_add)
+        
+        strings_old <-
+            strings_old_param %>% enframe(name = "line_old", value = "code_old") %>% replace_na(list(code_old = ""))
+        
+        alerts_old <- alerts_old_param %>%
+            aggregate_alerts_by_line(trunc_rule_length = length_alert_name_side_by_side) %>%
+            select(line_old = beginline, rule_old = rule)
+        
+        strings_new <-
+            strings_new_param %>% enframe(name = "line_new", value = "code_new") %>% replace_na(list(code_new = ""))
+        
+        alerts_new <- alerts_new_param %>%
+            aggregate_alerts_by_line(trunc_rule_length = length_alert_name_side_by_side) %>%
+            select(line_new = beginline, rule_new = rule)
+        
+        
+        saida <- map %>%
+            left_join(strings_old,
+                      by = c("line_old")) %>%
+            left_join(alerts_old,
+                      by = c("line_old")) %>%
+            left_join(strings_new,
+                      by = c("line_new")) %>%
+            left_join(alerts_new,
+                      by = c("line_new")) %>%
+            ungroup() %>% 
+            mutate(
+                id_line = row_number(), 
+                 alert_mark_up = if_else(is.na(rule_new) & is.na(rule_old) , NA_integer_, id_line ),  
+                 alert_mark_down = if_else(is.na(rule_new) & is.na(rule_old), NA_integer_, id_line )  
+            ) %>%
+            fill(
+                alert_mark_up,
+                .direction = "up"
+            ) %>% 
+            fill(
+                alert_mark_down,
+                .direction = "down"
+            ) %>% 
+            replace_na(
+                list(
+                    alert_mark_down = 0,
+                    alert_mark_up = nrow(map)
+                )
+            ) %>% 
+            mutate(
+                dist_up = id_line - alert_mark_down,
+                dist_down = alert_mark_up - id_line
+            ) %>% 
+            rowwise() %>%
+            mutate(
+                min_dist = min(dist_up, dist_down)
+            ) %>% 
+            mutate(
+                code_new = if_else(min_dist == region_size + 1, "/* ...  */", code_new ),
+                code_old = if_else(min_dist == region_size + 1, "/* ...  */", code_old )
+            ) %>% 
+            filter(
+                min_dist <= region_size + 1
+            ) %>% 
+            ungroup() %>% 
+            select(
+                -id_line
+            ) %>% 
+            mutate(line_old = as.character(line_old),
+                   line_new = as.character(line_new)) %>%
+            replace_na(
+                list(
+                    code_new = "/*XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX*/",
+                    code_old = "/*XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX*/",
+                    line_old = "",
+                    line_new = "",
+                    code_old = "",
+                    code_new = "",
+                    rule_old = "",
+                    rule_new = ""
+                )
+            ) %>%
+            mutate(
+                line_old = line_old %>%  str_pad(width = 3, side = "left"),
+                line_new = line_new %>%  str_pad(width = 3, side = "left"),
+                code_old = code_old %>%
+                    str_trunc(
+                        width = size_line_of_code_side_by_side - length_alert_name_side_by_side,
+                        ellipsis = ""
+                    ) %>%
+                    str_pad(
+                        width = size_line_of_code_side_by_side - length_alert_name_side_by_side,
+                        side = "right"
+                    ),
+                
+                code_new = code_new %>%
+                    str_trunc(
+                        width = size_line_of_code_side_by_side - length_alert_name_side_by_side,
+                        ellipsis = ""
+                    ) %>%
+                    str_pad(
+                        width = size_line_of_code_side_by_side - length_alert_name_side_by_side,
+                        side = "right"
+                    ),
+                
+                rule_old = rule_old %>% str_pad(width = length_alert_name_side_by_side + 3, side = "right"),
+                rule_new = rule_new %>% str_pad(width = length_alert_name_side_by_side + 3, side = "right"),
+                
+                
+                
+                final_code = str_glue(
+                    "/*{line_old}-{rule_old}*/{code_old}/*{line_new}-{rule_new}*/{code_new}"
+                )
+            ) %>%
+            pull(final_code) %>% 
+            view()
+        
+        
+        
+    }
 
-  # for debug
-  # strings <- read_lines("old/code.java")
-  # alerts <- examples_executed$pmd_output[[1]]
-  
-
-  alert <- alerts %>%
-      as_tibble() %>% 
-      select(beginline, rule) %>%
-      aggregate_alerts_by_line()
-    
-
-
-  max_rule <- alert %>% 
-      pull(rule) %>% 
-      str_length() %>% 
-      max(na.rm = TRUE)
-      
-  
-  strings %>% 
-      enframe(name = "line", value = "code") %>% 
-      left_join(
-          alert,
-          by = c("line" = "beginline")
-      ) %>% 
-      replace_na(
-          list(rule = "")
-      ) %>% 
-      mutate(
-          line = as.character(line) %>%  str_pad(width = 3, side = "left"),
-          code = code %>%  str_trunc(width = size_line_of_code - length_alert_name, ellipsis = "..."),
-          rule = rule %>% str_pad(width = length_alert_name, side = "right" ),
-          final_code = str_glue("/*{line}-{rule}*/{code}") 
-      ) %>% 
-      pull(final_code) 
-}
-
-
-decorate_code_alerts_mapped <- function(strings_old_param, alerts_old_param, strings_new_param, alerts_new_param, map_param){
-
-  # for debug
-  # strings_old_param <-  read_lines("old/code.java")
-  # strings_new_param <-  read_lines("new/code.java")
-  # alerts_old_param <-  examples_executed$pmd_output[[1]] 
-  # alerts_new_param <-  examples_executed$pmd_output[[2]] 
-  # map_param <-  examples_crossed$lines_map[[1]]
-  
-  
-
-  map <- map_param %>%
-    select(
-      line_old = map_remove,
-      line_new = map_add
-    )
-
-  strings_old <- strings_old_param %>% enframe(name = "line_old", value = "code_old") %>% replace_na(list(code_old = ""))
-
-  alerts_old <- alerts_old_param %>%
-    aggregate_alerts_by_line(trunc_rule_length = length_alert_name_side_by_side) %>%
-    select(line_old = beginline, rule_old = rule ) 
-
-  strings_new <- strings_new_param %>% enframe(name = "line_new", value = "code_new") %>% replace_na(list(code_new = ""))
-
-  alerts_new <- alerts_new_param %>%
-    aggregate_alerts_by_line(trunc_rule_length = length_alert_name_side_by_side) %>%
-    select(line_new = beginline, rule_new = rule )
-
-
-  saida <- map %>%
-    left_join(
-      strings_old,
-      by = c("line_old")
-    ) %>%
-    left_join(
-      alerts_old,
-      by = c("line_old")
-    ) %>%
-    left_join(
-      strings_new,
-      by = c("line_new")
-    ) %>%
-    left_join(
-      alerts_new,
-      by = c("line_new")
-    ) %>%
-    mutate(
-      line_old = as.character(line_old),
-      line_new = as.character(line_new)
-    ) %>% 
-    replace_na(
-      list(
-        code_new = "/*XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX*/",
-        code_old = "/*XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX*/",
-        line_old = "",
-        line_new = "",
-        code_old = "",
-        code_new = "",
-        rule_old = "",
-        rule_new = ""
-      )
-    ) %>%
-    mutate(
-      line_old = line_old %>%  str_pad(width = 3, side = "left"),
-      line_new = line_new %>%  str_pad(width = 3, side = "left"),
-      code_old = code_old %>%  
-        str_trunc(width = size_line_of_code_side_by_side - length_alert_name_side_by_side, ellipsis = "") %>% 
-        str_pad(width = size_line_of_code_side_by_side - length_alert_name_side_by_side, side = "right"),
-      
-      code_new = code_new %>%  
-        str_trunc(width = size_line_of_code_side_by_side - length_alert_name_side_by_side, ellipsis = "") %>%  
-        str_pad(width = size_line_of_code_side_by_side - length_alert_name_side_by_side, side = "right"),
-      
-      rule_old = rule_old %>% str_pad(width = length_alert_name_side_by_side + 3, side = "right" ),
-      rule_new = rule_new %>% str_pad(width = length_alert_name_side_by_side + 3, side = "right" ),
-      final_code = str_glue("/*{line_old}-{rule_old}*/{code_old}/*{line_new}-{rule_new}*/{code_new}")
-    ) %>%
-    pull(final_code)
-
-  
-
-}
-
-
-read_and_decorate_code <-  function(file){
-    read_lines(file, ) %>% 
-        decorate_code() %>% 
+read_and_decorate_code <-  function(file) {
+    read_lines(file,) %>%
+        decorate_code() %>%
         as.character()
 }
 
-
-
-read_and_decorate_code_and_alerts <-  function(file, alerts){
-  
-  #for debug
-  # file <-  "old/code.java"
-  # alerts <- examples_executed$pmd_output[[1]]
-
-  read_lines(file) %>% 
-      decorate_code_and_alerts(alerts = alerts) %>% 
-      as.character()
+read_and_decorate_code_and_alerts <-  function(file, alerts,  region_only = FALSE,
+             region_size = 3) {
+    #for debug
+    # file <-  "old/code.java"
+    # alerts <- examples_executed$pmd_output[[1]]
+    
+    read_lines(file) %>%
+        decorate_code_and_alerts(alerts = alerts, region_only = region_only, region_size = region_size) %>%
+        as.character()
 }
 
-
-
-read_and_decorate_code_and_alerts_mapped <-  function(file_old, alerts_old, file_new, alerts_new, map){
-
-  # For debug
-  # file_old <- "old/code.java"
-  # alerts_old <- examples_executed$pmd_output[[1]] 
-  # file_new <-  "new/code.java"
-  # alerts_new <- examples_executed$pmd_output[[2]]
-  # map <- examples_crossed$lines_map[[1]]
-
-  strings_new <- read_lines(file_new)
-  strings_old <- read_lines(file_old)
-  
-  decorate_code_alerts_mapped(
-    strings_old_param = strings_old,
-    strings_new_param = strings_new,
-    alerts_old_param = alerts_old,
-    alerts_new_param = alerts_new,
-    map_param = map
-  ) %>% 
-    as.character() 
-  
-}
-
+read_and_decorate_code_and_alerts_mapped <-
+    function(file_old,
+             alerts_old,
+             file_new,
+             alerts_new,
+             map,             
+             region_only = FALSE,
+             region_size = 3) {
+        # For debug
+        # file_old <- "old/code.java"
+        # alerts_old <- examples_executed$pmd_output[[1]]
+        # file_new <-  "new/code.java"
+        # alerts_new <- examples_executed$pmd_output[[2]]
+        # map <- examples_crossed$lines_map[[1]]
+        
+        strings_new <- read_lines(file_new)
+        strings_old <- read_lines(file_old)
+        
+        decorate_code_alerts_mapped(
+            strings_old_param = strings_old,
+            strings_new_param = strings_new,
+            alerts_old_param = alerts_old,
+            alerts_new_param = alerts_new,
+            map_param = map,
+            region_only = region_only,
+            region_size = region_size            
+        ) %>%
+            as.character()
+        
+    }
 
 ```
 
@@ -761,7 +850,7 @@ The old version, with the alerts generated by PMI, is shown below.
 \blandscape
 
 
-```{java code old, code=read_and_decorate_code_and_alerts("old/code.java", examples_executed$pmd_output[[1]]), echo = TRUE }
+```{java code old, code=read_and_decorate_code_and_alerts("old/code.java", examples_executed$pmd_output[[1]], TRUE, 3), echo = TRUE }
 
 ```
 
@@ -938,7 +1027,7 @@ Now we can connect the to versions and plugin the alerts
 
 
 
-```{java showing codes, code=read_and_decorate_code_and_alerts_mapped("old/code.java", examples_executed$pmd_output[[1]], "new/code.java", examples_executed$pmd_output[[2]],examples_crossed$lines_map[[1]]), echo=TRUE, size="tiny"  }
+```{java showing codes, code=read_and_decorate_code_and_alerts_mapped("old/code.java", examples_executed$pmd_output[[1]], "new/code.java", examples_executed$pmd_output[[2]],examples_crossed$lines_map[[1]], TRUE, 3), echo=TRUE, size="tiny"  }
 
 ```
 
