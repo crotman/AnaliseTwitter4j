@@ -183,6 +183,28 @@ TODO
 	</rule>
 
 
+	<rule name="type_declaration"
+      language="java"
+      message="type_declaration"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//TypeDeclaration
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+
+
+
 
 	<rule name="class_or_interface_body"
       language="java"

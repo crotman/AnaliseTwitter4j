@@ -25,7 +25,7 @@ library(gt)
 library(knitr)
 library(kableExtra)
 
-knitr::opts_chunk$set(echo = FALSE, size = "small", warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = FALSE, size = "small", warning = FALSE, message = FALSE, cache = FALSE)
 
 def.chunk.hook  <- knitr::knit_hooks$get("chunk")
 knitr::knit_hooks$set(chunk = function(x, options) {
@@ -71,7 +71,7 @@ These are the steps of the algorithm:
 \subsection{Generate a list of alerts for each version}\label{codes}
 
 
-```{r definitions, cache=TRUE, echo=FALSE}
+```{r definitions, echo=FALSE}
 
 size_line_of_code <- 160
 
@@ -86,7 +86,7 @@ pmd_path <- "C:\\doutorado\\AnaliseTwitter4j\\pmd\\bin\\pmd.bat"
 
 rule_path <- "rulesets/java/quickstart.xml"
 
-output_path <-  "C:\\doutorado\\AnaliseTwitter4j\\match_algorithm_description\\"
+output_path <-  "C:\\doutorado\\AnaliseTwitter4j\\match_algorithm_description\\"  
 
 examples <- tribble(
     
@@ -430,6 +430,68 @@ classifications_to_show %>%
 
 
 ```
+
+
+
+
+Table \ref{class_old} shows the classification of the alerts in the new version.
+
+
+
+```{r}
+classifications_to_show <- classifications %>% 
+  filter(version == "New" ) %>% 
+  select(
+    id = id_alert_new,
+    line = line_new,
+    rule = rule_new,
+    class = class_new,
+    method = method_new,
+    variable = variable_new,
+    idold = id_alert_old,
+    lineold = line_old, 
+    category = classification
+  ) %>% 
+  ungroup() %>% 
+  mutate_if(
+    is.character,
+    ~str_replace_all(.x, "\\_", "\\\\_") 
+  )  
+
+classifications_to_show %>% 
+  mutate(
+    category = cell_spec(x = category, format = "latex", color = if_else(category == "Fixed", "darkgreen", "darkred"))
+  ) %>%
+  kable(
+    format = "latex",
+    caption = "Classifications of the alerts in the new version",
+    escape = FALSE,
+    booktabs = TRUE,
+    linesep = ""
+  ) %>%
+  kable_styling(
+    font_size = 6,
+    latex_options = c("hold_position", "striped")
+  )
+  
+
+
+
+```
+
+
+
+
+
+
+
+\section{Matches by Block}
+
+
+
+
+
+
 
 
 

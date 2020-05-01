@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd xmlns="http://pmd.sourceforge.net/report/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.net/report/2.0.0 http://pmd.sourceforge.net/report_2_0_0.xsd"
+    version="6.18.0" timestamp="2020-05-01T18:10:08.292">
+<file name="C:\doutorado\AnaliseTwitter4j\match_algorithm_description\new\code.java">
+<violation beginline="18" endline="152" begincolumn="1" endcolumn="1" rule="compilation_unit" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+compilation_unit
+</violation>
+<violation beginline="18" endline="18" begincolumn="9" endcolumn="17" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="18" endline="18" begincolumn="1" endcolumn="18" rule="package" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+package
+</violation>
+<violation beginline="20" endline="20" begincolumn="1" endcolumn="36" rule="import_declaration" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+import_declaration
+</violation>
+<violation beginline="20" endline="20" begincolumn="8" endcolumn="35" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="21" endline="21" begincolumn="1" endcolumn="36" rule="import_declaration" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+import_declaration
+</violation>
+<violation beginline="21" endline="21" begincolumn="8" endcolumn="35" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="23" endline="23" begincolumn="1" endcolumn="19" rule="import_declaration" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+import_declaration
+</violation>
+<violation beginline="23" endline="23" begincolumn="8" endcolumn="16" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="33" endline="152" begincolumn="62" endcolumn="1" rule="class_or_interface_body" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+class_or_interface_body
+</violation>
+<violation beginline="33" endline="152" begincolumn="62" endcolumn="1" rule="class_or_interface_body" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+class_or_interface_body
+</violation>
+<violation beginline="33" endline="152" begincolumn="1" endcolumn="1" rule="class_or_interface_declaration" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+class_or_interface_declaration
+</violation>
+<violation beginline="33" endline="33" begincolumn="27" endcolumn="41" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="33" endline="33" begincolumn="54" endcolumn="60" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="33" endline="33" begincolumn="19" endcolumn="41" rule="extends_list" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+extends_list
+</violation>
+<violation beginline="33" endline="33" begincolumn="43" endcolumn="60" rule="implements_list" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+implements_list
+</violation>
+<violation beginline="33" endline="152" begincolumn="1" endcolumn="1" rule="type_declaration" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+type_declaration
+</violation>
+<violation beginline="35" endline="35" begincolumn="26" endcolumn="31" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="35" endline="35" begincolumn="59" endcolumn="73" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="35" endline="35" begincolumn="42" endcolumn="57" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="38" endline="38" begincolumn="17" endcolumn="29" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="38" endline="38" begincolumn="37" endcolumn="49" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="39" endline="39" begincolumn="15" endcolumn="18" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="39" endline="39" begincolumn="21" endcolumn="24" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="40" endline="40" begincolumn="34" endcolumn="46" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="40" endline="40" begincolumn="9" endcolumn="26" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="40" endline="40" begincolumn="70" endcolumn="99" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="41" endline="41" begincolumn="13" endcolumn="41" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="41" endline="41" begincolumn="43" endcolumn="46" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="42" endline="42" begincolumn="36" endcolumn="56" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="42" endline="42" begincolumn="58" endcolumn="61" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="43" endline="43" begincolumn="40" endcolumn="63" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="43" endline="43" begincolumn="65" endcolumn="68" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="45" endline="45" begincolumn="13" endcolumn="18" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="45" endline="45" begincolumn="40" endcolumn="68" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="46" endline="46" begincolumn="43" endcolumn="64" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="47" endline="47" begincolumn="17" endcolumn="35" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="48" endline="48" begincolumn="32" endcolumn="48" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="49" endline="49" begincolumn="21" endcolumn="37" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="51" endline="51" begincolumn="17" endcolumn="33" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="51" endline="51" begincolumn="58" endcolumn="79" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="54" endline="54" begincolumn="17" endcolumn="40" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="55" endline="55" begincolumn="32" endcolumn="48" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="56" endline="56" begincolumn="21" endcolumn="37" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="58" endline="58" begincolumn="17" endcolumn="33" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="61" endline="61" begincolumn="13" endcolumn="31" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="61" endline="61" begincolumn="18" endcolumn="30" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="61" endline="61" begincolumn="46" endcolumn="69" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="61" endline="61" begincolumn="56" endcolumn="68" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="62" endline="62" begincolumn="17" endcolumn="45" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="63" endline="63" begincolumn="32" endcolumn="44" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="63" endline="63" begincolumn="17" endcolumn="26" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="65" endline="65" begincolumn="17" endcolumn="35" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="66" endline="66" begincolumn="32" endcolumn="44" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="66" endline="66" begincolumn="17" endcolumn="26" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="66" endline="66" begincolumn="64" endcolumn="85" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="68" endline="68" begincolumn="17" endcolumn="38" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="69" endline="69" begincolumn="32" endcolumn="44" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="69" endline="69" begincolumn="17" endcolumn="26" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="71" endline="71" begincolumn="17" endcolumn="47" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="72" endline="72" begincolumn="32" endcolumn="44" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="72" endline="72" begincolumn="17" endcolumn="26" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="74" endline="74" begincolumn="17" endcolumn="40" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="75" endline="75" begincolumn="32" endcolumn="44" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="75" endline="75" begincolumn="17" endcolumn="26" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="77" endline="77" begincolumn="13" endcolumn="25" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="77" endline="77" begincolumn="65" endcolumn="77" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="77" endline="77" begincolumn="46" endcolumn="59" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="77" endline="77" begincolumn="79" endcolumn="89" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="81" endline="81" begincolumn="13" endcolumn="44" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="81" endline="81" begincolumn="46" endcolumn="49" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="81" endline="81" begincolumn="52" endcolumn="68" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="82" endline="82" begincolumn="13" endcolumn="41" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="82" endline="82" begincolumn="43" endcolumn="46" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="82" endline="82" begincolumn="49" endcolumn="62" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="84" endline="84" begincolumn="36" endcolumn="49" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="85" endline="85" begincolumn="40" endcolumn="56" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="90" endline="90" begincolumn="6" endcolumn="13" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="91" endline="91" begincolumn="12" endcolumn="26" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="91" endline="91" begincolumn="50" endcolumn="56" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="91" endline="117" begincolumn="12" endcolumn="5" rule="method" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+method
+</violation>
+<violation beginline="92" endline="92" begincolumn="50" endcolumn="56" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="92" endline="92" begincolumn="77" endcolumn="82" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="93" endline="93" begincolumn="50" endcolumn="55" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="93" endline="93" begincolumn="72" endcolumn="77" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="93" endline="93" begincolumn="90" endcolumn="95" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="94" endline="94" begincolumn="20" endcolumn="35" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="95" endline="95" begincolumn="9" endcolumn="27" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="95" endline="95" begincolumn="14" endcolumn="26" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="95" endline="95" begincolumn="43" endcolumn="66" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="95" endline="95" begincolumn="53" endcolumn="65" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="96" endline="96" begincolumn="13" endcolumn="30" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="97" endline="97" begincolumn="29" endcolumn="41" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="97" endline="97" begincolumn="13" endcolumn="23" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="97" endline="97" begincolumn="67" endcolumn="84" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="99" endline="99" begincolumn="13" endcolumn="29" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="100" endline="100" begincolumn="29" endcolumn="41" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="100" endline="100" begincolumn="13" endcolumn="23" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="100" endline="100" begincolumn="65" endcolumn="90" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="102" endline="102" begincolumn="13" endcolumn="27" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="103" endline="103" begincolumn="29" endcolumn="41" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="103" endline="103" begincolumn="13" endcolumn="23" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="103" endline="103" begincolumn="63" endcolumn="77" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="105" endline="105" begincolumn="13" endcolumn="25" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="106" endline="106" begincolumn="29" endcolumn="41" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="106" endline="106" begincolumn="13" endcolumn="23" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="106" endline="106" begincolumn="61" endcolumn="73" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="108" endline="108" begincolumn="13" endcolumn="21" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="109" endline="109" begincolumn="29" endcolumn="41" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="109" endline="109" begincolumn="13" endcolumn="23" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="109" endline="109" begincolumn="56" endcolumn="64" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="111" endline="111" begincolumn="13" endcolumn="16" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="112" endline="112" begincolumn="29" endcolumn="41" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="112" endline="112" begincolumn="13" endcolumn="23" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="112" endline="112" begincolumn="51" endcolumn="54" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="114" endline="114" begincolumn="16" endcolumn="44" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="114" endline="114" begincolumn="46" endcolumn="49" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="114" endline="114" begincolumn="51" endcolumn="69" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="115" endline="115" begincolumn="39" endcolumn="51" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="115" endline="115" begincolumn="19" endcolumn="33" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="115" endline="115" begincolumn="53" endcolumn="64" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+name
+</violation>
+<violation beginline="120" endline="120" begincolumn="6" endcolumn="13" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+name
+</violation>
+<violation beginline="121" endline="121" begincolumn="12" endcolumn="26" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="121" endline="121" begincolumn="51" endcolumn="57" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="121" endline="147" begincolumn="12" endcolumn="5" rule="method" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+method
+</violation>
+<violation beginline="122" endline="122" begincolumn="50" endcolumn="56" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="122" endline="122" begincolumn="77" endcolumn="82" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="123" endline="123" begincolumn="50" endcolumn="55" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="123" endline="123" begincolumn="72" endcolumn="77" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="123" endline="123" begincolumn="90" endcolumn="95" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="124" endline="124" begincolumn="20" endcolumn="35" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="125" endline="125" begincolumn="9" endcolumn="27" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="125" endline="125" begincolumn="14" endcolumn="26" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="125" endline="125" begincolumn="43" endcolumn="66" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="125" endline="125" begincolumn="53" endcolumn="65" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="126" endline="126" begincolumn="13" endcolumn="30" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="127" endline="127" begincolumn="29" endcolumn="41" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="127" endline="127" begincolumn="13" endcolumn="23" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="127" endline="127" begincolumn="67" endcolumn="84" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="129" endline="129" begincolumn="13" endcolumn="29" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="130" endline="130" begincolumn="29" endcolumn="41" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="130" endline="130" begincolumn="13" endcolumn="23" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="130" endline="130" begincolumn="65" endcolumn="90" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="132" endline="132" begincolumn="13" endcolumn="27" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="133" endline="133" begincolumn="29" endcolumn="41" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="133" endline="133" begincolumn="13" endcolumn="23" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="133" endline="133" begincolumn="63" endcolumn="77" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="135" endline="135" begincolumn="13" endcolumn="25" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="136" endline="136" begincolumn="29" endcolumn="41" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="136" endline="136" begincolumn="13" endcolumn="23" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="136" endline="136" begincolumn="61" endcolumn="73" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="138" endline="138" begincolumn="13" endcolumn="21" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="139" endline="139" begincolumn="29" endcolumn="41" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="139" endline="139" begincolumn="13" endcolumn="23" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="139" endline="139" begincolumn="56" endcolumn="64" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="141" endline="141" begincolumn="13" endcolumn="16" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="142" endline="142" begincolumn="29" endcolumn="41" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="142" endline="142" begincolumn="13" endcolumn="23" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="142" endline="142" begincolumn="51" endcolumn="54" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="144" endline="144" begincolumn="16" endcolumn="44" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="144" endline="144" begincolumn="46" endcolumn="49" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="144" endline="144" begincolumn="51" endcolumn="69" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="145" endline="145" begincolumn="39" endcolumn="51" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+class_or_interface_type
+</violation>
+<violation beginline="145" endline="145" begincolumn="19" endcolumn="33" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+<violation beginline="145" endline="145" begincolumn="53" endcolumn="64" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings2" priority="3">
+name
+</violation>
+</file>
+</pmd>

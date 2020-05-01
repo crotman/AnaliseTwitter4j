@@ -4,9 +4,10 @@ assemble_pmd_command <- function(pmd_path, code_path, rule_path, output_path, ou
 
 read_pmd_xml <- function(file){
     
+    # file <- "new_1.xml"
+    
     content_xml <- read_xml(file)
-    
-    
+
     alerts <- content_xml %>% 
         xml_children() %>% 
         xml_children() %>% 
@@ -16,7 +17,11 @@ read_pmd_xml <- function(file){
         mutate(linha = cumsum(primeiro_campo) ) %>% 
         select(-primeiro_campo) %>% 
         pivot_wider(names_from = name, values_from = value) %>% 
-        mutate(id_alert = row_number())
+        mutate(id_alert = row_number()) %>% 
+        mutate_at(
+            vars(one_of(c("beginline", "endline", "begincolumn", "endcolumn", "priority"))),
+            as.integer
+        )
     
 }
 
@@ -196,11 +201,17 @@ map_lines <- function(file, lines_prev_param, lines_post_param){
 }
 
 
-categorise_alerts <- function(map, alerts_old, alerts_new){
+categorise_alerts <- function(map, alerts_old_param, alerts_new_param){
     
     map  = examples_crossed$lines_map[[1]]
+
+    alerts_old_param <- examples_executed$pmd_output[[1]]
+
+    alerts_new_param <- examples_executed$pmd_output[[2]]
     
-    alerts_old = examples_executed$pmd_output[[1]] %>% 
+    
+    
+    alerts_old = alerts_old_param %>%
         select(
             id_alert,
             line = beginline,
@@ -210,16 +221,16 @@ categorise_alerts <- function(map, alerts_old, alerts_new){
             class,
             method,
             variable
-        ) %>% 
+        ) %>%
         rename_all(
             .funs = ~str_glue("{.x}_old")
-        ) %>% 
+        ) %>%
         mutate(
             line_old = as.integer(line_old)
         )
-    
-    
-    alerts_new = examples_executed$pmd_output[[2]] %>% 
+    # 
+    # 
+    alerts_new = alerts_new_param %>%
         select(
             id_alert,
             line = beginline,
@@ -229,14 +240,14 @@ categorise_alerts <- function(map, alerts_old, alerts_new){
             class,
             method,
             variable
-        ) %>% 
+        ) %>%
         rename_all(
             .funs = ~str_glue("{.x}_new")
-        ) %>% 
+        ) %>%
         mutate(
             line_new = as.integer(line_new)
         )
-    
+
     
     classification_old <- map %>% 
         select(
@@ -481,13 +492,13 @@ decorate_code_alerts_mapped <-
              region_only = FALSE,
              region_size = 3) {
         # for debug
-        strings_old_param <-  read_lines("old/code.java")
-        strings_new_param <-  read_lines("new/code.java")
-        alerts_old_param <-  examples_executed$pmd_output[[1]]
-        alerts_new_param <-  examples_executed$pmd_output[[2]]
-        map_param <-  examples_crossed$lines_map[[1]]
-        region_only = FALSE
-        region_size = 3      
+        # strings_old_param <-  read_lines("old/code.java")
+        # strings_new_param <-  read_lines("new/code.java")
+        # alerts_old_param <-  examples_executed$pmd_output[[1]]
+        # alerts_new_param <-  examples_executed$pmd_output[[2]]
+        # map_param <-  examples_crossed$lines_map[[1]]
+        # region_only = FALSE
+        # region_size = 3      
         
         
         map <- map_param %>%
