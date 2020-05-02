@@ -25,7 +25,7 @@ This is a test, I'm trying to read the abstract syntax tree of a code using PMD 
 
 ```{r}
 
-shell(r"(C:\doutorado\AnaliseTwitter4j\pmd\bin/pmd.bamat -d C:\doutorado\AnaliseTwitter4j\match_algorithm_description\new -f xml -R C:\doutorado\AnaliseTwitter4j\match_algorithm_description\blockrules\blockrules.xml -reportfile C:\doutorado\AnaliseTwitter4j\match_algorithm_description\oldblock.xml)")
+shell(r"(C:\doutorado\AnaliseTwitter4j\pmd\bin/pmd.bat -d C:\doutorado\AnaliseTwitter4j\match_algorithm_description\little-tree -f xml -R C:\doutorado\AnaliseTwitter4j\match_algorithm_description\blockrules\blockrules.xml -reportfile C:\doutorado\AnaliseTwitter4j\match_algorithm_description\oldblock.xml)")
 
 
 ```
@@ -37,7 +37,12 @@ shell(r"(C:\doutorado\AnaliseTwitter4j\pmd\bin/pmd.bamat -d C:\doutorado\Analise
 
 ```{r}
 
-alerts <- read_pmd_xml("oldblock.xml")  
+alerts <- read_pmd_xml("oldblock.xml") %>% 
+    replace_na(
+        list(
+            method = "No method"
+        )
+    )
 
 max_column <- max(alerts$endcolumn)
 
@@ -45,7 +50,7 @@ alerts_from <- alerts %>%  rename_all(.funs = ~str_glue("{.x}_from"))
 
 alerts_to <- alerts %>%  rename_all(.funs = ~str_glue("{.x}_to"))
 
-edges <- alerts_from %>% 
+all_edges <- alerts_from %>% 
     crossing(alerts_to) %>% 
     mutate(
         location_begin_from = beginline_from * max_column + begincolumn_from,
@@ -61,20 +66,78 @@ edges <- alerts_from %>%
         from = id_alert_from,
         to =id_alert_to
     ) 
-    
 
+
+descendents <- all_edges %>% 
+    group_by(from) %>% 
+    summarise(n_descendents = n()) 
+
+alerts_sorted <- alerts %>% 
+    left_join(
+        descendents,
+        by = c("id_alert" = "from")
+    ) %>% 
+    replace_na(
+        list(n_descendents = 0 )
+    ) %>% 
+    arrange(
+        desc(n_descendents)
+    ) %>% 
+    mutate(
+        id_alert_old = id_alert,
+        id_alert = row_number()
+    ) 
+
+map_new_id_alert <- alerts_sorted %>% 
+    select(
+        id_alert_old,
+        id_alert
+    )
+
+all_edges_new_id <-  all_edges %>% 
+    left_join(
+        map_new_id_alert,
+        c("from" = "id_alert_old")
+    ) %>% 
+    mutate(
+        from = id_alert
+    ) %>% 
+    select(-id_alert) %>% 
+    left_join(
+        map_new_id_alert,
+        c("to" = "id_alert_old")
+    ) %>% 
+    mutate(
+        to = id_alert
+    ) %>% 
+    select(-id_alert) 
+    
 complete_graph <- create_empty(n = 0, directed = TRUE) %>% 
-    bind_nodes(alerts) %>% 
-    bind_edges(edges) 
+    bind_nodes(alerts_sorted ) %>% 
+    bind_edges(all_edges_new_id) 
 
 
 graph_dfs_tree <- complete_graph %>% 
-    convert(to_dfs_tree, root = 1, mode = "out" )
+    convert(to_dfs_tree , root = 1, mode = "out" )
     
 
 edges <- graph_dfs_tree %>% 
     activate(edges)
 
+
+ggraph(graph_dfs_tree ) +
+    geom_edge_link(arrow = arrow(length = unit(4, 'mm')), 
+                   end_cap = circle(3, 'mm')) +    
+    geom_node_point() +
+    geom_node_label(
+        aes(label = rule),
+        label.size = 0.1,
+        size = 2
+    ) +
+    coord_flip() +
+    scale_x_continuous(expand =c(-1.5,1.1)) +
+    scale_y_continuous(expand =c(-1.8,1.8)) +
+    theme(aspect.ratio = 0.7  )
 
 
     

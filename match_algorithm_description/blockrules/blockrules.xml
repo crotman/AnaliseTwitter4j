@@ -227,24 +227,6 @@ TODO
 
 
 
-	<rule name="class_or_interface_body"
-      language="java"
-      message="class_or_interface_body"
-      class="net.sourceforge.pmd.lang.rule.XPathRule" >
-    <description>
-TODO
-    </description>
-    <priority>3</priority>
-    <properties>
-        <property name="xpath">
-            <value>
-<![CDATA[
-//ClassOrInterfaceBody
-]]>
-            </value>
-        </property>
-    </properties>
-	</rule>
 
 
 
