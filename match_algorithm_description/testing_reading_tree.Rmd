@@ -37,11 +37,34 @@ shell(r"(C:\doutorado\AnaliseTwitter4j\pmd\bin/pmd.bat -d C:\doutorado\AnaliseTw
 
 ```{r}
 
+map_rule_small <- tribble(
+    
+    ~rule,                              ~small_rule,
+    "class_or_interface_body",          "class_body",                   
+    "class_or_interface_declaration",   "class_decl",
+    "class_or_interface_type",          "class_type",
+    "compilation_unit",                 "unit",
+    "extends_list",                     "extends",
+    "implements_list",                  "implements",
+    "import_declaration",               "import",
+    "method",                           "method",
+    "name",                             "name",
+    "package",                          "package",
+    "type_declaration",                 "type_decl"
+    
+)
+
+alerts$rule %>% unique() %>% sort() 
+
 alerts <- read_pmd_xml("oldblock.xml") %>% 
     replace_na(
         list(
             method = "No method"
         )
+    ) %>% 
+    left_join(
+        map_rule_small,
+        by = c("rule")
     )
 
 max_column <- max(alerts$endcolumn)
@@ -128,16 +151,20 @@ edges <- graph_dfs_tree %>%
 ggraph(graph_dfs_tree ) +
     geom_edge_link(arrow = arrow(length = unit(4, 'mm')), 
                    end_cap = circle(3, 'mm')) +    
-    geom_node_point() +
+    geom_node_point(
+        aes(color = method),
+        size = 3
+    ) +
     geom_node_label(
-        aes(label = rule),
+        aes(label = small_rule),
         label.size = 0.1,
+        repel = TRUE,
         size = 2
     ) +
     coord_flip() +
     scale_x_continuous(expand =c(-1.5,1.1)) +
     scale_y_continuous(expand =c(-1.8,1.8)) +
-    theme(aspect.ratio = 0.7  )
+    theme(aspect.ratio = 0.5  )
 
 
     
