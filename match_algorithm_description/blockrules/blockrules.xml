@@ -183,9 +183,9 @@ TODO
 	</rule>
 
 
-	<rule name="type_declaration"
+	<rule name="field_declaration"
       language="java"
-      message="type_declaration"
+      message="field_declaration"
       class="net.sourceforge.pmd.lang.rule.XPathRule" >
     <description>
 TODO
@@ -195,15 +195,12 @@ TODO
         <property name="xpath">
             <value>
 <![CDATA[
-//TypeDeclaration
+//FieldDeclaration
 ]]>
             </value>
         </property>
     </properties>
 	</rule>
-
-
-
 
 
 	<rule name="class_or_interface_body"
@@ -225,6 +222,25 @@ TODO
     </properties>
 	</rule>
 
+
+	<rule name="constructor_declaration"
+      language="java"
+      message="constructor_declaration"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//ConstructorDeclaration
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
 
 
 

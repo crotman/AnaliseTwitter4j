@@ -37,6 +37,45 @@ shell(r"(C:\doutorado\AnaliseTwitter4j\pmd\bin/pmd.bat -d C:\doutorado\AnaliseTw
 
 ```{r}
 
+
+extract_piece_of_code <-  function(begin_line, end_line, begin_column, end_column){
+
+    print("entrou")
+    
+    #for debug
+    strings_param <- read_lines("little-tree/code.java") %>% str_flatten("\n")
+    # begin_line <- 33
+    # end_line <- 43
+    # begin_column <- 5
+    # end_column <- 5
+
+    strings <- str_split(strings_param, pattern = "\n") %>% unlist()
+    
+    piece <- strings %>% 
+        enframe(name = "line", value = "code") %>% 
+        filter(
+            between(line, begin_line, end_line)
+        ) %>% 
+        mutate(
+            code = case_when(
+                   line == begin_line & line == end_line ~ str_sub(code, start = begin_column , end_column),
+                   line == begin_line ~  str_sub(code, start = begin_column),
+                   line == end_line ~str_sub(code, end = end_column),
+                   TRUE ~ code
+                )   
+        ) %>% 
+        pull(code) %>% 
+        str_flatten(collapse = "\n") 
+    
+    print("saiu")
+
+    piece
+
+            
+}
+
+
+
 map_rule_small <- tribble(
     
     ~rule,                              ~small_rule,
@@ -50,11 +89,13 @@ map_rule_small <- tribble(
     "method",                           "method",
     "name",                             "name",
     "package",                          "package",
-    "type_declaration",                 "type_decl"
+    "type_declaration",                 "type_decl",
+    "constructor_declaration",          "constructor",
+    "field_declaration",                "field"
     
 )
 
-alerts$rule %>% unique() %>% sort() 
+code_all_lines <- read_lines("little-tree/code.java")
 
 alerts <- read_pmd_xml("oldblock.xml") %>% 
     replace_na(
@@ -65,6 +106,21 @@ alerts <- read_pmd_xml("oldblock.xml") %>%
     left_join(
         map_rule_small,
         by = c("rule")
+    ) %>% 
+    mutate(
+        name = str_glue("{id_alert}:{small_rule}")
+    ) %>% 
+    mutate(
+        code = pmap(
+            .l =  list(
+                #strings_param = str_flatten(code_all_lines, collapse = "\n"), 
+                begin_line = beginline, 
+                end_line = endline, 
+                begin_column = begincolumn, 
+                end_column = endcolumn                
+            ),
+            .f = extract_piece_of_code 
+        )
     )
 
 max_column <- max(alerts$endcolumn)
@@ -149,22 +205,26 @@ edges <- graph_dfs_tree %>%
 
 
 ggraph(graph_dfs_tree ) +
-    geom_edge_link(arrow = arrow(length = unit(4, 'mm')), 
-                   end_cap = circle(3, 'mm')) +    
+    geom_edge_link(arrow = arrow(length = unit(2, 'mm')), 
+                   end_cap = circle(2, 'mm')) +    
     geom_node_point(
         aes(color = method),
         size = 3
     ) +
     geom_node_label(
-        aes(label = small_rule),
+        aes(label = name),
         label.size = 0.1,
         repel = TRUE,
-        size = 2
+        size = 2,
+        label.padding = 0.1
     ) +
     coord_flip() +
-    scale_x_continuous(expand =c(-1.5,1.1)) +
-    scale_y_continuous(expand =c(-1.8,1.8)) +
-    theme(aspect.ratio = 0.5  )
+    scale_x_reverse(expand =c(-1.2,1.2)) +
+    scale_y_continuous(expand =c(-2,2)) +
+    theme(
+        aspect.ratio = 0.4  ,
+        legend.position = "top" 
+    )
 
 
     
