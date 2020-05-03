@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd xmlns="http://pmd.sourceforge.net/report/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.net/report/2.0.0 http://pmd.sourceforge.net/report_2_0_0.xsd"
+    version="6.18.0" timestamp="2020-05-03T12:46:33.893">
+<file name="C:\doutorado\AnaliseTwitter4j\match_algorithm_description\little-tree\code.java">
+<violation beginline="12" endline="12" begincolumn="13" endcolumn="28" rule="ControlStatementBraces" ruleset="Code Style" package="pack_x" class="ClassX" method="ClassX" externalInfoUrl="https://pmd.github.io/pmd/pmd_rules_java_codestyle.html#controlstatementbraces" priority="3">
+This statement should have braces
+</violation>
+<violation beginline="21" endline="21" begincolumn="13" endcolumn="28" rule="ControlStatementBraces" ruleset="Code Style" package="pack_x" class="ClassX" method="methodX" externalInfoUrl="https://pmd.github.io/pmd/pmd_rules_java_codestyle.html#controlstatementbraces" priority="3">
+This statement should have braces
+</violation>
+</file>
+</pmd>
