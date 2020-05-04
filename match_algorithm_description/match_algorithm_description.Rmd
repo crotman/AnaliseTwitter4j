@@ -60,13 +60,13 @@ In the following, I describe two algorithms. The first one, described in Section
 
 \section{Matches by line of code}\label{alg1}
 
-In this first algorithm, I match the lines of code of the old version with the lines of code of the new version using information from the output of git's diff command. When an alert with the same features occurs in both matched lines, this alert is declared *not fixed*. The alerts that occur in a not matched line of the old version are declared *fixed* and the alerts located in a not matched line of the new version are declared *new*
+In this first algorithm, I match the lines of code of the old version with the lines of code of the new version using information from the output of git's diff command. When an alert with the same features occurs in both matched lines, this alert is declared **not fixed**. The alerts that occur in a not matched line of the old version are declared *fixed* and the alerts located in a unmatched line of the new version are declared as **new**.
 
 These are the steps of the algorithm:
 
-1. Generate a list of alerts from each version (old and new) using PMD Alert
-1. Generate the git diff between the two versions
-2. Using information from git diff, create a map between the lines
+1. Generate a list of alerts from each version (old and new) using PMD Alert;
+2. Generate the git diff between the two versions;
+3. Using information from git diff, create a map between the lines.
 
 \subsection{Generate a list of alerts for each version}\label{codes}
 
