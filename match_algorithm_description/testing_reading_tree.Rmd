@@ -38,11 +38,11 @@ shell(r"(C:\doutorado\AnaliseTwitter4j\pmd\bin/pmd.bat -d C:\doutorado\AnaliseTw
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.height=8, fig.width==10}
 
 
-extract_piece_of_code <-  function(begin_line, end_line, begin_column, end_column){
+extract_piece_of_code <-  function(strings_param, begin_line, end_line, begin_column, end_column){
 
 
     #for debug
-    strings_param <- read_lines("little-tree/code.java") %>% str_flatten("\n")
+    #strings_param <- read_lines("little-tree/code.java") %>% str_flatten("\n")
     # begin_line <- 33
     # end_line <- 43
     # begin_column <- 5
@@ -116,7 +116,7 @@ alerts <- read_pmd_xml("oldblock.xml") %>%
     mutate(
         code = pmap(
             .l =  list(
-                #strings_param = str_flatten(code_all_lines, collapse = "\n"), 
+                strings_param = str_flatten(code_all_lines, collapse = "\n"), 
                 begin_line = beginline, 
                 end_line = endline, 
                 begin_column = begincolumn, 

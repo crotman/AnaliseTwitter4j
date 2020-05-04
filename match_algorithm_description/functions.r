@@ -669,3 +669,42 @@ read_and_decorate_code_and_alerts_mapped <-
         
     }
 
+
+
+extract_piece_of_code <-  function(strings_param, begin_line, end_line, begin_column, end_column){
+    
+    
+    #for debug
+    #strings_param <- read_lines("little-tree/code.java") %>% str_flatten("\n")
+    # begin_line <- 33
+    # end_line <- 43
+    # begin_column <- 5
+    # end_column <- 5
+    
+    strings <- str_split(strings_param, pattern = "\n") %>% unlist()
+    
+    piece <- strings %>% 
+        enframe(name = "line", value = "code") %>% 
+        filter(
+            between(line, begin_line, end_line)
+        ) %>% 
+        mutate(
+            code = case_when(
+                line == begin_line & line == end_line ~ str_sub(code, start = begin_column , end_column),
+                line == begin_line ~  str_sub(code, start = begin_column),
+                line == end_line ~str_sub(code, end = end_column),
+                TRUE ~ code
+            )   
+        ) %>% 
+        pull(code) %>% 
+        str_flatten(collapse = "\n") 
+    
+    
+    piece
+    
+    
+}
+
+
+
+

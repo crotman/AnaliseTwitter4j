@@ -5,7 +5,6 @@ import importX.function;
 class ClassX extends ClassY implements InterfX {
     private long fieldX;
     
-    /*package*/
     ClassX(int paramX, double paramY) {		
         int varX = function(paramX, paramY);		
         if (varX == 0)

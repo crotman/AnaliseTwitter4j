@@ -1,35 +1,5 @@
-/*
- * Copyright (C) 2007 Yusuke Yamamoto
- * Copyright (C) 2011 Twitter, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package twitter4j;
-  
-import twitter4j.auth.Authorization;
-import twitter4j.conf.Configuration;
 
-import java.util.*;
-
-
-/**
- * A java representation of the <a href="https://dev.twitter.com/docs/api">Twitter REST API</a><br>
- * This class is thread safe and can be cached/re-used and used concurrently.<br>
- * Currently this class is not carefully designed to be extended. It is suggested to extend this class only for mock testing purpose.<br>
- *
- * @author Yusuke Yamamoto - yusuke at mac.com
- */
 class TwitterImpl extends TwitterBaseImpl implements Twitter {
     private static final long serialVersionUID = 9170943084096085770L;
     private static final Logger logger = Logger.getLogger(TwitterBaseImpl.class);
@@ -115,37 +85,6 @@ class TwitterImpl extends TwitterBaseImpl implements Twitter {
                 , profile.toArray(new HttpParameter[profile.size()])));
 
     }
-
-
-    @Override
-    public AccountSettings updateAccountSettings2(Integer trendlocationWoeid,
-                                                 Boolean sleep_timeEnabled, String start_sleepTime,
-                                                 String end_sleepTime, String time_zone, String lang)
-            throws TwitterException {
-        List<HttpParameter> profile = new ArrayList<HttpParameter>(6);
-        if (trendlocationWoeid != null) {
-            profile.add(new HttpParameter("trend_location_woeid", trendlocationWoeid));
-        }
-        if (sleep_timeEnabled != null) {
-            profile.add(new HttpParameter("sleep_time_enabled", sleep_timeEnabled.toString()));
-        }
-        if (start_sleepTime != null) {
-            profile.add(new HttpParameter("start_sleep_time", start_sleepTime));
-        }
-        if (end_sleepTime != null) {
-            profile.add(new HttpParameter("end_sleep_time", end_sleepTime));
-        }
-        if (time_zone != null) {
-            profile.add(new HttpParameter("time_zone", time_zone));
-        }
-        if (lang != null) {
-            profile.add(new HttpParameter("lang", lang));
-        }
-        return factory.createAccountSettings(post(conf.getRestBaseURL() + "account/settings.json"
-                , profile.toArray(new HttpParameter[profile.size()])));
-
-    }
-
 
     private int not_used = 0;
 

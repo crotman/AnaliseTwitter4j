@@ -2,84 +2,162 @@
 <pmd xmlns="http://pmd.sourceforge.net/report/2.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://pmd.sourceforge.net/report/2.0.0 http://pmd.sourceforge.net/report_2_0_0.xsd"
-    version="6.18.0" timestamp="2020-05-02T19:33:03.582">
+    version="6.18.0" timestamp="2020-05-03T22:21:10.119">
 <file name="C:\doutorado\AnaliseTwitter4j\match_algorithm_description\little-tree\code.java">
-<violation beginline="18" endline="50" begincolumn="1" endcolumn="1" rule="compilation_unit" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+<violation beginline="1" endline="26" begincolumn="1" endcolumn="3" rule="compilation_unit" ruleset="complete" package="pack_x" class="ClassX" priority="3">
 compilation_unit
 </violation>
-<violation beginline="18" endline="18" begincolumn="9" endcolumn="17" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+<violation beginline="1" endline="1" begincolumn="9" endcolumn="14" rule="name" ruleset="complete" package="pack_x" class="ClassX" priority="3">
 name
 </violation>
-<violation beginline="18" endline="18" begincolumn="1" endcolumn="18" rule="package" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+<violation beginline="1" endline="1" begincolumn="1" endcolumn="15" rule="package" ruleset="complete" package="pack_x" class="ClassX" priority="3">
 package
 </violation>
-<violation beginline="20" endline="20" begincolumn="1" endcolumn="36" rule="import_declaration" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+<violation beginline="3" endline="3" begincolumn="1" endcolumn="24" rule="import_declaration" ruleset="complete" package="pack_x" class="ClassX" priority="3">
 import_declaration
 </violation>
-<violation beginline="20" endline="20" begincolumn="8" endcolumn="35" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+<violation beginline="3" endline="3" begincolumn="8" endcolumn="23" rule="name" ruleset="complete" package="pack_x" class="ClassX" priority="3">
 name
 </violation>
-<violation beginline="29" endline="50" begincolumn="62" endcolumn="1" rule="class_or_interface_body" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+<violation beginline="5" endline="26" begincolumn="48" endcolumn="1" rule="class_or_interface_body" ruleset="complete" package="pack_x" class="ClassX" priority="3">
 class_or_interface_body
 </violation>
-<violation beginline="29" endline="50" begincolumn="1" endcolumn="1" rule="class_or_interface_declaration" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+<violation beginline="5" endline="26" begincolumn="1" endcolumn="1" rule="class_or_interface_declaration" ruleset="complete" package="pack_x" class="ClassX" priority="3">
 class_or_interface_declaration
 </violation>
-<violation beginline="29" endline="29" begincolumn="27" endcolumn="41" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+<violation beginline="5" endline="5" begincolumn="22" endcolumn="27" rule="class_or_interface_type" ruleset="complete" package="pack_x" class="ClassX" priority="3">
 class_or_interface_type
 </violation>
-<violation beginline="29" endline="29" begincolumn="54" endcolumn="60" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+<violation beginline="5" endline="5" begincolumn="40" endcolumn="46" rule="class_or_interface_type" ruleset="complete" package="pack_x" class="ClassX" priority="3">
 class_or_interface_type
 </violation>
-<violation beginline="29" endline="29" begincolumn="19" endcolumn="41" rule="extends_list" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+<violation beginline="5" endline="5" begincolumn="14" endcolumn="27" rule="extends_list" ruleset="complete" package="pack_x" class="ClassX" priority="3">
 extends_list
 </violation>
-<violation beginline="29" endline="29" begincolumn="43" endcolumn="60" rule="implements_list" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+<violation beginline="5" endline="5" begincolumn="29" endcolumn="46" rule="implements_list" ruleset="complete" package="pack_x" class="ClassX" priority="3">
 implements_list
 </violation>
-<violation beginline="30" endline="30" begincolumn="26" endcolumn="70" rule="field_declaration" ruleset="complete" package="twitter4j" class="TwitterImpl" variable="VariableDeclaratorId" priority="3">
+<violation beginline="6" endline="6" begincolumn="13" endcolumn="24" rule="field_declaration" ruleset="complete" package="pack_x" class="ClassX" variable="VariableDeclaratorId" priority="3">
 field_declaration
 </violation>
-<violation beginline="33" endline="33" begincolumn="17" endcolumn="29" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
-class_or_interface_type
+<violation beginline="6" endline="6" begincolumn="18" endcolumn="23" rule="variable_id" ruleset="complete" package="pack_x" class="ClassX" variable="fieldX" priority="3">
+variable_id
 </violation>
-<violation beginline="33" endline="33" begincolumn="37" endcolumn="49" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
-class_or_interface_type
-</violation>
-<violation beginline="33" endline="41" begincolumn="5" endcolumn="5" rule="constructor_declaration" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+<violation beginline="8" endline="15" begincolumn="5" endcolumn="5" rule="constructor_declaration" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" priority="3">
 constructor_declaration
 </violation>
-<violation beginline="35" endline="35" begincolumn="13" endcolumn="20" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+<violation beginline="8" endline="8" begincolumn="12" endcolumn="21" rule="formal_parameter" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" variable="paramX" priority="3">
+formal_parameter
+</violation>
+<violation beginline="8" endline="8" begincolumn="24" endcolumn="36" rule="formal_parameter" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" variable="paramY" priority="3">
+formal_parameter
+</violation>
+<violation beginline="8" endline="8" begincolumn="11" endcolumn="37" rule="formal_parameters" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" priority="3">
+formal_parameters
+</violation>
+<violation beginline="8" endline="8" begincolumn="16" endcolumn="21" rule="variable_id" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" variable="paramX" priority="3">
+variable_id
+</violation>
+<violation beginline="8" endline="8" begincolumn="31" endcolumn="36" rule="variable_id" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" variable="paramY" priority="3">
+variable_id
+</violation>
+<violation beginline="9" endline="9" begincolumn="20" endcolumn="27" rule="name" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" priority="3">
 name
 </violation>
-<violation beginline="36" endline="36" begincolumn="13" endcolumn="20" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+<violation beginline="9" endline="9" begincolumn="29" endcolumn="34" rule="name" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" priority="3">
 name
 </violation>
-<violation beginline="39" endline="39" begincolumn="13" endcolumn="20" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="TwitterImpl" priority="3">
+<violation beginline="9" endline="9" begincolumn="37" endcolumn="42" rule="name" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" priority="3">
 name
 </violation>
-<violation beginline="42" endline="42" begincolumn="6" endcolumn="13" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" priority="3">
+<violation beginline="9" endline="9" begincolumn="13" endcolumn="16" rule="variable_id" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" variable="varX" priority="3">
+variable_id
+</violation>
+<violation beginline="10" endline="14" begincolumn="9" endcolumn="17" rule="statement" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" priority="3">
+block_statement
+</violation>
+<violation beginline="10" endline="14" begincolumn="9" endcolumn="17" rule="if_statement" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" priority="3">
+if_statement
+</violation>
+<violation beginline="10" endline="10" begincolumn="13" endcolumn="16" rule="name" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" priority="3">
 name
 </violation>
-<violation beginline="43" endline="43" begincolumn="12" endcolumn="26" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+<violation beginline="11" endline="11" begincolumn="13" endcolumn="28" rule="statement" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" priority="3">
+block_statement
+</violation>
+<violation beginline="12" endline="14" begincolumn="13" endcolumn="17" rule="block" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" priority="3">
+block
+</violation>
+<violation beginline="12" endline="14" begincolumn="13" endcolumn="17" rule="statement" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" priority="3">
+block_statement
+</violation>
+<violation beginline="13" endline="13" begincolumn="13" endcolumn="28" rule="statement" ruleset="complete" package="pack_x" class="ClassX" method="ClassX" priority="3">
+block_statement
+</violation>
+<violation beginline="16" endline="16" begincolumn="5" endcolumn="13" rule="annotation" ruleset="complete" package="pack_x" class="ClassX" priority="3">
+annotation
+</violation>
+<violation beginline="16" endline="16" begincolumn="6" endcolumn="13" rule="name" ruleset="complete" package="pack_x" class="ClassX" priority="3">
+name
+</violation>
+<violation beginline="17" endline="17" begincolumn="36" endcolumn="42" rule="class_or_interface_type" ruleset="complete" package="pack_x" class="ClassX" method="methodX" priority="3">
 class_or_interface_type
 </violation>
-<violation beginline="43" endline="43" begincolumn="50" endcolumn="56" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
-class_or_interface_type
+<violation beginline="17" endline="17" begincolumn="24" endcolumn="33" rule="formal_parameter" ruleset="complete" package="pack_x" class="ClassX" method="methodX" variable="paramW" priority="3">
+formal_parameter
 </violation>
-<violation beginline="43" endline="49" begincolumn="12" endcolumn="5" rule="method" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+<violation beginline="17" endline="17" begincolumn="36" endcolumn="49" rule="formal_parameter" ruleset="complete" package="pack_x" class="ClassX" method="methodX" variable="paramZ" priority="3">
+formal_parameter
+</violation>
+<violation beginline="17" endline="17" begincolumn="23" endcolumn="50" rule="formal_parameters" ruleset="complete" package="pack_x" class="ClassX" method="methodX" priority="3">
+formal_parameters
+</violation>
+<violation beginline="17" endline="25" begincolumn="12" endcolumn="6" rule="method" ruleset="complete" package="pack_x" class="ClassX" method="methodX" priority="3">
 method
 </violation>
-<violation beginline="44" endline="44" begincolumn="50" endcolumn="56" rule="class_or_interface_type" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
-class_or_interface_type
+<violation beginline="17" endline="17" begincolumn="28" endcolumn="33" rule="variable_id" ruleset="complete" package="pack_x" class="ClassX" method="methodX" variable="paramW" priority="3">
+variable_id
 </violation>
-<violation beginline="45" endline="45" begincolumn="20" endcolumn="35" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+<violation beginline="17" endline="17" begincolumn="44" endcolumn="49" rule="variable_id" ruleset="complete" package="pack_x" class="ClassX" method="methodX" variable="paramZ" priority="3">
+variable_id
+</violation>
+<violation beginline="18" endline="25" begincolumn="5" endcolumn="6" rule="block" ruleset="complete" package="pack_x" class="ClassX" method="methodX" priority="3">
+block
+</violation>
+<violation beginline="19" endline="23" begincolumn="9" endcolumn="17" rule="statement" ruleset="complete" package="pack_x" class="ClassX" method="methodX" priority="3">
+block_statement
+</violation>
+<violation beginline="19" endline="23" begincolumn="9" endcolumn="17" rule="if_statement" ruleset="complete" package="pack_x" class="ClassX" method="methodX" priority="3">
+if_statement
+</violation>
+<violation beginline="19" endline="19" begincolumn="13" endcolumn="18" rule="name" ruleset="complete" package="pack_x" class="ClassX" method="methodX" priority="3">
 name
 </violation>
-<violation beginline="47" endline="47" begincolumn="17" endcolumn="29" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+<violation beginline="20" endline="20" begincolumn="13" endcolumn="28" rule="statement" ruleset="complete" package="pack_x" class="ClassX" method="methodX" priority="3">
+block_statement
+</violation>
+<violation beginline="20" endline="20" begincolumn="13" endcolumn="18" rule="name" ruleset="complete" package="pack_x" class="ClassX" method="methodX" priority="3">
 name
 </violation>
-<violation beginline="48" endline="48" begincolumn="24" endcolumn="36" rule="name" ruleset="complete" package="twitter4j" class="TwitterImpl" method="updateAccountSettings" priority="3">
+<violation beginline="20" endline="20" begincolumn="22" endcolumn="27" rule="name" ruleset="complete" package="pack_x" class="ClassX" method="methodX" priority="3">
+name
+</violation>
+<violation beginline="21" endline="23" begincolumn="13" endcolumn="17" rule="block" ruleset="complete" package="pack_x" class="ClassX" method="methodX" priority="3">
+block
+</violation>
+<violation beginline="21" endline="23" begincolumn="13" endcolumn="17" rule="statement" ruleset="complete" package="pack_x" class="ClassX" method="methodX" priority="3">
+block_statement
+</violation>
+<violation beginline="22" endline="22" begincolumn="13" endcolumn="23" rule="statement" ruleset="complete" package="pack_x" class="ClassX" method="methodX" priority="3">
+block_statement
+</violation>
+<violation beginline="22" endline="22" begincolumn="13" endcolumn="18" rule="name" ruleset="complete" package="pack_x" class="ClassX" method="methodX" priority="3">
+name
+</violation>
+<violation beginline="24" endline="24" begincolumn="9" endcolumn="36" rule="statement" ruleset="complete" package="pack_x" class="ClassX" method="methodX" priority="3">
+block_statement
+</violation>
+<violation beginline="24" endline="24" begincolumn="16" endcolumn="21" rule="name" ruleset="complete" package="pack_x" class="ClassX" method="methodX" priority="3">
 name
 </violation>
 </file>
