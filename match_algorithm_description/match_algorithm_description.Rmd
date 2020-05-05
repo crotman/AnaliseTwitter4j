@@ -1,7 +1,7 @@
 ---
 title: "Match algorithm description"
 author: "Bruno Crotman"
-date: "18/04/2020"
+date: "04/05/2020"
 header-includes:
   - \usepackage{lscape}
   - \newcommand{\blandscape}{\begin{landscape}}
@@ -60,7 +60,7 @@ In order to decide if an alert is *open*, *fixed* or *new*, we have to identify 
 
 I describe here two algorithms. The first one, described in Section \ref{alg1}, is a naive algorithm based on matches by lines of code and some characteristics of the alert. The second is a more sophisticated algorithm, based on matches by blocks of code, using the Abstract Syntax Code.
 
-In the following, I describe two algorithms. The first one, described in Section \ref{alg1}, is a naive algorithm based on matches by lines of code. The second is a more sophisticated algorithm, based on matches by blocks of code.
+In the following, I describe two algorithms. The first one, described in Section \ref{alg1}, is a naive algorithm based on matches by lines of code and some key features of the alerts. The second is a more sophisticated algorithm, based on matches by blocks of code, using the Abstract Syntax Tree.
 
 
 
@@ -70,9 +70,9 @@ In this first algorithm, I match the lines of code of the old version with the l
 
 These are the steps of the algorithm:
 
-1. Generate a list of alerts from each version (old and new) using PMD Alert;
-2. Generate the git diff between the two versions;
-3. Using information from git diff, create a map between the lines.
+1. Generate a list of alerts from each version (old and new) using PMD Alert (Section \ref{codes});
+2. Generate the git diff between the two versions (Section \ref{diff});
+3. Using information from git diff, create a map between the lines (Section \ref{map});
 4. Categorize the alerts (Section \ref{categorize}).
 
 
