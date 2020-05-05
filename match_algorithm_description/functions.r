@@ -291,7 +291,7 @@ categorise_alerts <- function(map, alerts_old_param, alerts_new_param){
                     method_old == method_new &
                     variable_new == variable_old
                 ,
-                "Not fixed",
+                "Open",
                 "Fixed"
             )
         ) %>% 
@@ -299,7 +299,7 @@ categorise_alerts <- function(map, alerts_old_param, alerts_new_param){
             id_alert_old
         ) %>% 
         mutate(
-            n_not_fixed = sum(classification == "Not fixed")
+            n_not_fixed = sum(classification == "Open")
         ) %>% 
         filter(
             (n_not_fixed == 0) | classification == "Not fixed"
@@ -348,7 +348,7 @@ categorise_alerts <- function(map, alerts_old_param, alerts_new_param){
                     method_old == method_new &
                     variable_new == variable_old
                 ,
-                "Not fixed",
+                "Open",
                 "New"
             )
         ) %>% 
@@ -356,10 +356,10 @@ categorise_alerts <- function(map, alerts_old_param, alerts_new_param){
             id_alert_new
         ) %>% 
         mutate(
-            n_not_fixed = sum(classification == "Not fixed")
+            n_not_fixed = sum(classification == "Open")
         ) %>% 
         filter(
-            (n_not_fixed == 0) | classification == "Not fixed"
+            (n_not_fixed == 0) | classification == "Open"
         ) 
     
     classification <- bind_rows(
