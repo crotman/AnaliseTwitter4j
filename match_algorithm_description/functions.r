@@ -849,6 +849,10 @@ generate_ast_tree_from_raw_nodes <-  function(nodes){
         ) %>% 
         select(-id_alert) 
     
+    nodes_sorted <-  nodes_sorted %>% 
+        select(-id_alert_old)
+    
+    
     complete_graph <- create_empty(n = 0, directed = TRUE) %>% 
         bind_nodes(nodes_sorted ) %>% 
         bind_edges(all_edges_new_id) 
@@ -860,24 +864,67 @@ generate_ast_tree_from_raw_nodes <-  function(nodes){
 }
 
 
-show_ast <-  function(graph_dfs_tree, size_label = 5.5){
+show_ast <-  function(
+    graph_dfs_tree, 
+    size_label = 5.5, 
+    alpha_label = 1,
+    node_text_field = "id_alert", 
+    name_field = "name", 
+    show_label = TRUE
+){
+
+    # graph_dfs_tree <- graph_old
     
+    # graph_selected <- graph_dfs_tree %>% 
+    #     activate(nodes) %>% 
+    #     filter(
+    #         id_alert %in% c(9, 10, 42, 41, 15, 16)
+    #     ) %>% 
+    #     as_tibble()
+    
+
+    if(show_label){
+        
+        if(is.numeric(alpha_label)){
+            layer <- geom_node_label(
+                aes(label = .data[[name_field]]),
+                label.size = 0.3,
+                repel = TRUE,
+                size = size_label,
+                label.padding = 0.3,
+                alpha = alpha_label
+            )
+        }
+        else{
+            layer <- geom_node_label(
+                aes(
+                    label = .data[[name_field]],
+                    alpha = .data[[alpha_label]]
+                ),
+                label.size = 0.3,
+                repel = TRUE,
+                size = size_label,
+                label.padding = 0.3
+            )
+        }
+        
+    }
+    else{
+        layer <- NULL
+    }
+    
+    
+        
     ggraph(graph_dfs_tree, layout = "tree" ) +
         geom_edge_link(arrow = arrow(length = unit(2, 'mm')), 
-                       end_cap = circle(2, 'mm')) +    
-        geom_node_label(
-            aes(label = name),
-            label.size = 0.3,
-            repel = TRUE,
-            size_label = 5.5,
-            label.padding = 0.3
-        ) +
+                       end_cap = circle(3, 'mm')) +    
+        layer +
         geom_node_point(
             aes(color = method),
             size = 8
         ) +
         geom_node_text(
-            aes(label = id_alert),
+            aes(label = .data[[node_text_field]]),
             size = 5
         ) +
         coord_flip() +
@@ -887,6 +934,9 @@ show_ast <-  function(graph_dfs_tree, size_label = 5.5){
         theme(
             aspect.ratio = 1.3  ,
             legend.position = "top" 
+        ) +
+        guides(
+            alpha = FALSE
         )
 
     

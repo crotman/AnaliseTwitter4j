@@ -709,105 +709,16 @@ classifications_to_show %>%
 \subsection{Matches using the Abstract Syntax Tree and the relation between lines of code of the versions}\label{alg2}
 
 
-\textcolor{red}{Prof. Márcio Este tipo de informação deveria vir no início do texto. Você já tratou com alertas identificados antes ...}
+In this algorithm we use the AST to infer if the alerts in different versions must be considered the same
 
-\textcolor{red}{Bruno: É que aqui estou explicando como eu uso o mecanismo de geração de alertas pra gerar a AST. Mas vou pensar na melhor forma de dividir essas coisas no texto}
+We will consider the old version in figure \ref{old_simple_code}
 
-\textcolor{red}{Marcio: mas você não usou os mesmos kinds of elements da tabela 6 para gerar os alertas no algoritmo naive? Tudo que for comum aos dois deve vir no início do texto, antes do primeiro algoritmo. Como está, você fala do primeiro algoritmo, dá uma escapada do tema, e depois retorna, deixando o leitor um pouco mais perdido sobre o que você está tratando. Tenta reorganizar esta parte do texto. Acho que vai ficar melhor.}
-
-\textcolor{red}{Não. Na verdade eu rodo o PMD com o ruleset padrão pra gerar os alertas de possíveis kludges e tal, e uso esses alertas default, que já vem com algumas informações. Neste momento aqui eu rodo o PMD com um ruleset maceteado pra pegar todos os nós dos tipos escolhidos. Nesta hora ele não está pegando alertas, mas sim nós da AST. Vou explicar melhor nesta versão aqui. }
-
-
-\newpage
-
-It's possible to create custom rules for PMD. 
-Figure \ref{pmd_designer_fig} shows the designer tool that helps a user to create custom rules.
-
-We can see that the tool traverses the programming code visiting many different kinds of elements. 
-If we build our own simple rules, aimed only to capture some kinds of elements, we will generate list of "alerts" that will contain all the elements of the chosen kinds.
-
-\newpage
-
-In Figure \ref{ruleset}, we show an example of a ruleset that captures all the method declarations.
-
-```{xml, code=read_lines("blockrules/extractblockrules.xml"), echo = TRUE }
-
-```
-
-![Custom ruleset for PMD alerts tool \label{ruleset}](figures/fake.png)
-
-
-
-Table \ref{selected_nodes} shows the kinds of elements that were selected for the creation of an AST for the code in Figure \ref{simple_code}.
-
-
-```{r}
-
-map_rule_small <- tribble(
-    
-    ~rule,                              ~small_rule,
-    "class_or_interface_body",          "class_body",                   
-    "class_or_interface_declaration",   "class_decl",
-    "class_or_interface_type",          "class_type",
-    "compilation_unit",                 "unit",
-    "extends_list",                     "extends",
-    "implements_list",                  "implements",
-    "import_declaration",               "import",
-    "method",                           "method",
-    "name",                             "name",
-    "package",                          "package",
-    "type_declaration",                 "type_decl",
-    "constructor_declaration",          "constructor",
-    "field_declaration",                "field",
-    "variable_id",                      "var_id",
-    "formal_parameter",                 "param",
-    "formal_parameters",                "params",
-    "annotation",                       "annotation",
-    "block",                            "block",
-    "statement",                        "statement",
-    "if_statement",                     "if"
-
-)
-
-
-
-map_rule_small %>%
-  arrange(
-    rule
-  ) %>% 
-  mutate(
-    rule_number = row_number()
-  ) %>%
-  select(rule_number, rule) %>%
-  kable(
-    format = "latex",
-    caption = "Kinds of elements selected\\label{selected_nodes}",
-    escape = TRUE
-  ) %>%
-  kable_styling(
-    font_size = 8,
-    latex_options = c("hold_position", "striped")
-  )
-  
-
+```{java code old version, code=read_and_decorate_code_and_alerts("little-tree/code.java", examples_sec2_executed$pmd_output[[1]], FALSE, 10), echo = TRUE }
 
 ```
 
 
-
-\textcolor{red}{Prof. Márcio: OK, mas cadê o algoritmo
-para classificar os alertas}
-
-\textcolor{red}{Bruno: eu ainda não fiz isso, mesmo. Mas vai ser mais ou menos o seguinte, só preciso fazer umas experiências e organizar melhor: vou partir do que faço no naive, mas, para os alertas que não baterem, vou tentar subir na AST em direção à raiz e ver se num nó num nível acima as coisas batem (o nó da árvore tem que bater com o nó da outra árvore via match de linha e tipo de nó, e tem que bater também as características do alerta), depois posso subir de novo, se não der... Só tem que pensar bem porque tem duas árvores, e alertas subindo pelas duas árvores. Tenho que experimentar agora que já consigo montar as árvores e tal. testar uns exemplos e ver o que acontece. Consegui me familiarizar com umas bibliotecas do R que ajudam a manipular e plotar grafos (tidygraph e ggraph). Tem um trade-off entre complexidade do algoritmo e a quantidade de falsos negativos que ele vai dar por não bater alertas que deveriam bater. Não vou esgotar isso agora, mas quero organizar UM POUCO essas ideias e mostrar esses recursos da AST pra ajudar o Earl e vc a pensarem comigo}
-
-\textcolor{red}{Marcio: beleza. me avisa quando tiver uma nova versão que eu analiso. Note que você não precisa entrar no nível de detalhes de descrever uma AST, mostrar um exemplo de AST ou dizer como se gera o código a partir de uma AST. Eu e Earl, assim como os seus leitores, sabemos disso. O importante é você mostrar uma limitação do algoritmo anterior, de preferência com um exemplo, dizer como vai usar as informações da AST para resolver as limitações do caso anterior e descrever o novo algoritmo}.
-
-
-\textcolor{red}{Bruno: vou condensar, mas considero importante mostrar que elementos eu tô pegando nesta AST específica que estou montando, já que não pego TODOs os nós, apenas os selecionados }.
-
-
-
-
+![Old version  \label{old_simple_code}](figures/fake.png)
 
 
 
@@ -820,6 +731,12 @@ alerts_old <- examples_sec2_executed$pmd_output[[1]]
 alerts_new <- examples_sec2_executed$pmd_output[[2]]
 
 examples_sec2_crossed <- cross_versions(examples_sec2) 
+
+map <- examples_sec2_crossed$lines_map[[1]] %>% 
+  select(   
+    old = map_remove,
+    new = map_add
+  ) 
 
 nodes_old <- read_raw_ast_nodes(
   code_location = "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree/code.java",
@@ -838,9 +755,123 @@ graph_new <- generate_ast_tree_from_raw_nodes(nodes_new)
 
 graph_old <- generate_ast_tree_from_raw_nodes(nodes_old)
 
+nodes_new <- graph_new %>% 
+  activate(nodes) %>% 
+  as_tibble() %>% 
+  rename_all(
+    ~str_glue("{.x}_new")
+  )
 
-chart_graph_old <- show_ast(graph_old, size_label = 1.5) 
-chart_graph_new <- show_ast(graph_new, size_label = 1.5)
+nodes_old <- graph_old %>% 
+  activate(nodes) %>% 
+  as_tibble() %>% 
+  rename_all(
+    ~str_glue("{.x}_old")
+  ) 
+
+map_begin <- map %>% 
+  rename_all(
+    ~str_glue("{.x}_begin")
+  )
+
+map_end <- map %>% 
+  rename_all(
+    ~str_glue("{.x}_end")
+  )
+
+
+match_nodes <- nodes_old %>% 
+  left_join(
+    map_begin,
+    by = c("beginline_old" = "old_begin")
+  ) %>% 
+  left_join(
+    map_end,
+    by = c("endline_old" = "old_end")
+  ) %>% 
+  left_join(
+    nodes_new,
+    by = c(
+      "new_begin" = "beginline_new",
+      "new_end" = "endline_new",
+      "rule_old" = "rule_new"
+    )
+  ) %>%
+  group_by(
+    id_alert_old
+  ) %>% 
+  mutate(
+    n_old = n()
+  ) %>% 
+  group_by(
+    id_alert_new
+  ) %>% 
+  mutate(
+    n_new = n()
+  ) %>% 
+  ungroup() %>% 
+  filter(
+    (n_old == 1 & n_new == 1) | (begincolumn_new == begincolumn_old & begincolumn_old == begincolumn_new)
+  ) %>% 
+  group_by(
+    id_alert_old
+  ) %>% 
+  mutate(
+    n_old = n()
+  ) %>% 
+  group_by(
+    id_alert_new
+  ) %>% 
+  mutate(
+    n_new = n()
+  ) %>% 
+  ungroup() %>% 
+  select(
+    id_alert_new,
+    id_alert_old
+  ) %>% 
+  mutate(
+    id_group = row_number()
+  )
+
+graph_new_with_group <- graph_new %>% 
+  activate(nodes) %>% 
+  left_join(
+    match_nodes,
+    by = c("id_alert" = "id_alert_new" )
+  ) %>% 
+  select(
+    -id_alert_old 
+  ) %>% 
+  mutate(
+    mostra = case_when(
+      id_alert %in% c(10, 43, 17, 15, 18, 16, 45, 44) ~ 1,
+      TRUE ~ -1 
+    )
+  )
+
+graph_old_with_group <- graph_old %>% 
+  activate(nodes) %>% 
+  left_join(
+    match_nodes,
+    by = c("id_alert" = "id_alert_old" )
+  ) %>% 
+  select(
+    -id_alert_new 
+  ) %>% 
+  mutate(
+    mostra = case_when(
+      id_alert %in% c(10, 42, 41, 15, 16, 43) ~ 1,
+      TRUE ~ -1 
+    )
+  )
+
+
+# chart_graph_old <- show_ast(graph_old_with_group, size_label = 1.5, node_text_field = "id_group") 
+# chart_graph_new <- show_ast(graph_new_with_group, size_label = 1.5, node_text_field = "id_group")
+
+chart_graph_old <- show_ast(graph_old_with_group, size_label = 4, show_label = TRUE, alpha_label = "mostra") 
+chart_graph_new <- show_ast(graph_new_with_group, size_label = 4, show_label = TRUE, alpha_label = "mostra")
 
 
 chart_graph_old + chart_graph_new
@@ -857,6 +888,135 @@ chart_graph_old + chart_graph_new
 
 
 
+```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=16, fig.cap="Abstract Syntax Tree \\label{AST}"}
+
+chart_graph_old <- show_ast(
+  graph_old_with_group, 
+  size_label = 4, 
+  show_label = TRUE, 
+  alpha_label = 0, 
+  node_text_field = "id_group" 
+)
+
+chart_graph_new <- show_ast(
+  graph_new_with_group, 
+  size_label = 4, 
+  show_label = TRUE, 
+  alpha_label = 0, 
+  node_text_field = "id_group" 
+)
+
+
+chart_graph_old + chart_graph_new
+
+
+
+```
+
+
+
+
+
+```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=16, fig.cap="Abstract Syntax Tree \\label{AST}"}
+
+
+alerts_old <- examples_sec2_executed$pmd_output[[1]] %>% 
+  rename_all(
+    ~str_glue("{.x}_alert")
+  ) %>% 
+  mutate(
+    one = 1
+  )
+
+alerts_new <- examples_sec2_executed$pmd_output[[2]] %>% 
+  rename_all(
+    ~str_glue("{.x}_alert")
+  ) %>% 
+  mutate(
+    one = 1
+  )
+
+graph_old_with_alert <- graph_old_with_group %>% 
+  activate(nodes) %>% 
+  mutate(
+    one = 1
+  ) %>% 
+  left_join(
+    alerts_old,
+    by = c(
+      "beginline" = "beginline_alert", 
+      "endline" = "endline_alert", 
+      "begincolumn" = "begincolumn_alert", 
+      "endcolumn" = "endcolumn_alert")
+  ) %>% 
+  mutate(
+    text_alert = if_else(is.na(id_alert_alert),
+    "",
+    str_glue("{id_group}-{rule_alert}") %>%  as.character()
+    )
+  ) 
+
+
+graph_new_with_alert <- graph_new_with_group %>% 
+  activate(nodes) %>% 
+  mutate(
+    one = 1
+  ) %>% 
+  left_join(
+    alerts_new,
+    by = c(
+      "beginline" = "beginline_alert", 
+      "endline" = "endline_alert", 
+      "begincolumn" = "begincolumn_alert", 
+      "endcolumn" = "endcolumn_alert")
+  ) %>% 
+  mutate(
+    text_alert = if_else(is.na(id_alert_alert),
+    "",
+    str_glue("{id_group}-{rule_alert}") %>%  as.character()
+    )
+  ) 
+
+
+chart_graph_old <- show_ast(
+  graph_old_with_alert, 
+  size_label = 4, 
+  show_label = TRUE, 
+  alpha_label = 1, 
+  node_text_field = "id_group",
+  name_field = "text_alert"
+  
+)
+
+
+chart_graph_new <- show_ast(
+  graph_new_with_alert, 
+  size_label = 4, 
+  show_label = TRUE, 
+  alpha_label = 1, 
+  node_text_field = "id_group",
+  name_field = "text_alert"
+  
+)
+
+
+chart_graph_old + chart_graph_new
+
+
+
+```
+
+
+
+
+
+```{r}
+
+
+
+
+
+```
 
 
 
