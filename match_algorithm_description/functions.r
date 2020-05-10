@@ -40,7 +40,7 @@ read_number_of_lines <- function(dir){
 
 map_lines <- function(file, lines_prev_param, lines_post_param){
     
-    file <- "C:\\doutorado\\AnaliseTwitter4j\\match_algorithm_description\\old_original_new_1.diff"
+    # file <- "C:\\doutorado\\AnaliseTwitter4j\\match_algorithm_description\\old_original_new_1.diff"
     
     lines_prev_param <- as.integer(lines_prev_param)
     
@@ -706,5 +706,251 @@ extract_piece_of_code <-  function(strings_param, begin_line, end_line, begin_co
 }
 
 
+read_raw_ast_nodes <-  function(code_location, output_location ){
+    
+    
+    shell(str_glue("C:/doutorado/AnaliseTwitter4j/pmd/bin/pmd.bat -d {code_location} -f xml -R C:/doutorado/AnaliseTwitter4j/match_algorithm_description/blockrules/blockrules.xml -reportfile {output_location}"))
+    
+    code_all_lines <- read_lines(code_location)
+    
+    read_pmd_xml(output_location) %>% 
+        replace_na(
+            list(
+                method = "No method"
+            )
+        ) %>% 
+        left_join(
+            map_rule_small,
+            by = c("rule")
+        ) %>% 
+        mutate(
+            code = pmap(
+                .l =  list(
+                    strings_param = str_flatten(code_all_lines, collapse = "\n"), 
+                    begin_line = beginline, 
+                    end_line = endline, 
+                    begin_column = begincolumn, 
+                    end_column = endcolumn                
+                ),
+                .f = extract_piece_of_code 
+            )
+        )
+    
+    
+}
+
+
+show_latex_raw_ast_nodes <- function(nodes){
+    
+    nodes %>%
+        select(
+            -c(linha, ruleset, package, class, priority, variable, id_alert, small_rule)
+        ) %>% 
+        rename(
+            line = beginline,
+            endline = endline,
+            col = begincolumn,
+            endcol = endcolumn
+            
+        ) %>% 
+        mutate(
+            code = str_trunc(code,width = 30, ellipsis = "...")
+        ) %>% 
+        arrange(
+            line, col
+        ) %>% 
+        kable(
+            format = "latex",
+            caption = "Elements captured in code\\label{elements_captured}",
+            escape = TRUE
+        ) %>%
+        kable_styling(
+            font_size = 8,
+            latex_options = c("hold_position")
+        )
+    
+    
+}
+
+
+generate_ast_tree_from_raw_nodes <-  function(nodes){
+    
+    max_column <- max(nodes$endcolumn)
+    
+    nodes_from <- nodes %>%  rename_all(.funs = ~str_glue("{.x}_from"))
+    
+    nodes_to <- nodes %>%  rename_all(.funs = ~str_glue("{.x}_to"))
+    
+    all_edges <- nodes_from %>% 
+        crossing(nodes_to) %>% 
+        mutate(
+            location_begin_from = beginline_from * max_column + begincolumn_from,
+            location_begin_to = beginline_to * max_column + begincolumn_to,
+            location_end_from = endline_from * max_column + endcolumn_from,
+            location_end_to = endline_to * max_column + endcolumn_to
+        ) %>% 
+        filter(id_alert_from != id_alert_to) %>% 
+        filter(
+            location_begin_from <= location_begin_to & location_end_from >= location_end_to
+        ) %>% 
+        select(
+            from = id_alert_from,
+            to =id_alert_to
+        ) 
+    
+    
+    descendents <- all_edges %>% 
+        group_by(from) %>% 
+        summarise(n_descendents = n()) 
+    
+    nodes_sorted <- nodes %>% 
+        left_join(
+            descendents,
+            by = c("id_alert" = "from")
+        ) %>% 
+        replace_na(
+            list(n_descendents = 0 )
+        ) %>% 
+        arrange(
+            desc(n_descendents)
+        ) %>% 
+        mutate(
+            id_alert_old = id_alert,
+            id_alert = row_number()
+        ) %>%  
+        mutate(
+            name = case_when(
+                small_rule %in% c("name", "class_type","var_id" ) ~ str_glue('{id_alert}:{small_rule}:{code}'),
+                TRUE ~ str_glue("{id_alert}:{small_rule}")
+            )
+        )
+    
+    map_new_id_alert <- nodes_sorted %>% 
+        select(
+            id_alert_old,
+            id_alert
+        )
+    
+    all_edges_new_id <-  all_edges %>% 
+        left_join(
+            map_new_id_alert,
+            c("from" = "id_alert_old")
+        ) %>% 
+        mutate(
+            from = id_alert
+        ) %>% 
+        select(-id_alert) %>% 
+        left_join(
+            map_new_id_alert,
+            c("to" = "id_alert_old")
+        ) %>% 
+        mutate(
+            to = id_alert
+        ) %>% 
+        select(-id_alert) 
+    
+    complete_graph <- create_empty(n = 0, directed = TRUE) %>% 
+        bind_nodes(nodes_sorted ) %>% 
+        bind_edges(all_edges_new_id) 
+    
+    
+    complete_graph %>% 
+        convert(to_dfs_tree , root = 1, mode = "out" )
+    
+}
+
+
+show_ast <-  function(graph_dfs_tree, size_label = 5.5){
+    
+    ggraph(graph_dfs_tree, layout = "tree" ) +
+        geom_edge_link(arrow = arrow(length = unit(2, 'mm')), 
+                       end_cap = circle(2, 'mm')) +    
+        geom_node_label(
+            aes(label = name),
+            label.size = 0.3,
+            repel = TRUE,
+            size_label = 5.5,
+            label.padding = 0.3
+        ) +
+        geom_node_point(
+            aes(color = method),
+            size = 8
+        ) +
+        geom_node_text(
+            aes(label = id_alert),
+            size = 5
+        ) +
+        coord_flip() +
+        scale_x_reverse(expand =c(-1.2,1.2)) +
+        scale_y_continuous(expand =c(-1.2,1.2)) +
+        theme_void() +
+        theme(
+            aspect.ratio = 1.3  ,
+            legend.position = "top" 
+        )
+
+    
+}
+
+
+
+
+cross_versions <- function(examples_executed){
+    
+    # examples_executed <- examples_sec2_executed
+    
+    examples_executed_selected_fields_left <-
+        examples_executed %>% select(id, name, path, output) %>%
+        rename_all(
+            .funs = function(x) {
+                str_glue("{x}_left")
+            }
+        )
+    
+    examples_executed_selected_fields_right <-
+        examples_executed %>% select(id, name, path, output) %>%
+        rename_all(
+            .funs = function(x) {
+                str_glue("{x}_right")
+            }
+        )
+    
+    
+    examples_executed_selected_fields_left %>%
+        crossing(examples_executed_selected_fields_right) %>%
+        filter(id_left < id_right) %>%
+        mutate(diff_command =
+                   map2(
+                       .x = path_left,
+                       .y = path_right,
+                       ~ assemble_diff_command(
+                           code_path_left = .x,
+                           code_path_right = .y,
+                           output_path = output_path,
+                           output_left = output_left,
+                           output_right = output_right
+                       )
+                   )) %>%
+        mutate(lines_left = read_number_of_lines(path_left),
+               lines_right = read_number_of_lines(path_right)) %>%
+        mutate(
+            output_diff_command = map(
+                .x = diff_command,
+                .f = ~ shell(cmd = .x, shell = "PowerShell")
+            ),
+            file_diff = str_glue("{output_path}{output_left}_{output_right}.diff")
+        ) %>%
+        mutate(lines_map = pmap(
+            .l = list(
+                file = file_diff  ,
+                lines_prev_param = lines_left,
+                lines_post_param = lines_right
+            ),
+            .f = map_lines
+        ))
+    
+    
+    
+}
 
 
