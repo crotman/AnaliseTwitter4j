@@ -870,7 +870,8 @@ show_ast <-  function(
     alpha_label = 1,
     node_text_field = "id_alert", 
     name_field = "name", 
-    show_label = TRUE
+    show_label = TRUE,
+    title = ""
 ){
 
     # graph_dfs_tree <- graph_old
@@ -937,7 +938,8 @@ show_ast <-  function(
         ) +
         guides(
             alpha = FALSE
-        )
+        ) +
+        ggtitle(title)
 
     
 }

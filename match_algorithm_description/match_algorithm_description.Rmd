@@ -418,7 +418,7 @@ examples_executed$pmd_output[[2]] %>%
     id = id_alert,
     beginline,
     ruleset,
-    rule,
+    rule,  
     package,
     class,
     method,
@@ -711,7 +711,10 @@ classifications_to_show %>%
 
 In this algorithm we use the AST to infer if the alerts in different versions must be considered the same
 
-We will consider the old version in figure \ref{old_simple_code}
+We will consider the old version in Figure \ref{old_simple_code} and the new version in Figure \ref{new_simple_code}
+
+
+\newpage
 
 ```{java code old version, code=read_and_decorate_code_and_alerts("little-tree/code.java", examples_sec2_executed$pmd_output[[1]], FALSE, 10), echo = TRUE }
 
@@ -720,10 +723,21 @@ We will consider the old version in figure \ref{old_simple_code}
 
 ![Old version  \label{old_simple_code}](figures/fake.png)
 
+\newpage
+
+```{java code new version, code=read_and_decorate_code_and_alerts("little-tree-new/code.java", examples_sec2_executed$pmd_output[[2]], FALSE, 10), echo = TRUE }
+
+```
+
+
+![New version  \label{new_simple_code}](figures/fake.png)
 
 
 
-```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=16, fig.cap="Abstract Syntax Tree \\label{AST}"}
+In Figure \ref{AST_compare} we can see the comparison between the two ASTs. 
+
+
+```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=8, fig.cap="Abstract Syntax Trees compared. New and old versions \\label{AST_compare}"}
 
 
 alerts_old <- examples_sec2_executed$pmd_output[[1]]
@@ -870,8 +884,21 @@ graph_old_with_group <- graph_old %>%
 # chart_graph_old <- show_ast(graph_old_with_group, size_label = 1.5, node_text_field = "id_group") 
 # chart_graph_new <- show_ast(graph_new_with_group, size_label = 1.5, node_text_field = "id_group")
 
-chart_graph_old <- show_ast(graph_old_with_group, size_label = 4, show_label = TRUE, alpha_label = "mostra") 
-chart_graph_new <- show_ast(graph_new_with_group, size_label = 4, show_label = TRUE, alpha_label = "mostra")
+chart_graph_old <- show_ast(
+  graph_old_with_group, 
+  size_label = 4, 
+  show_label = TRUE, 
+  alpha_label = "mostra", 
+  title = "Old version"
+) 
+
+chart_graph_new <- show_ast(
+  graph_new_with_group, 
+  size_label = 4, 
+  show_label = TRUE, 
+  alpha_label = "mostra",
+  title = "New version"
+)
 
 
 chart_graph_old + chart_graph_new
@@ -885,10 +912,18 @@ chart_graph_old + chart_graph_new
 
 
 
+We define that a node from an AST is equivalent to a node of the AST of the subsequent version if:
+
+- Considering the relation between the lines of the two versions constructed as we saw in Section \ref{map}, the nodes in both trees begin and end in related lines
+
+- The nodes are of the same kind
+
+
+In Figure \ref{AST_groups} we can see both ASTs. The nodes with the same numbers inside the nodes are equivalent 
 
 
 
-```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=16, fig.cap="Abstract Syntax Tree \\label{AST}"}
+```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=8, fig.cap="Abstract Syntax Tree \\label{AST_groups}"}
 
 chart_graph_old <- show_ast(
   graph_old_with_group, 
@@ -915,9 +950,11 @@ chart_graph_old + chart_graph_new
 
 
 
+In Figure \ref{AST_with_alerts} we add the alerts that are related with nodes in the AST.
 
 
-```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=16, fig.cap="Abstract Syntax Tree \\label{AST}"}
+
+```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=16, fig.cap="Abstract Syntax Tree \\label{AST_with_alerts}"}
 
 
 alerts_old <- examples_sec2_executed$pmd_output[[1]] %>% 
@@ -1010,10 +1047,24 @@ chart_graph_old + chart_graph_new
 
 
 
+
+
 ```{r}
 
 
+graph_old_reverted <- graph_old_with_alert %>% 
+  activate(edges) %>% 
+  reroute(from = to, to = from)
 
+
+nodes_alerts <- graph_old_reverted %>% 
+  activate(nodes) %>% 
+  as_tibble()
+
+path <- graph_old_reverted %>% 
+    convert(to_shortest_path , from = 18, to = 1  , mode = "out" )
+  
+show_ast(path)
 
 
 ```
