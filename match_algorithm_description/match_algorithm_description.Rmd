@@ -1044,31 +1044,56 @@ chart_graph_old + chart_graph_new
 ```
 
 
+The path between the alert and the root of the AST can be seen in \ref{AST_alert_1}
 
 
-
-
-
-```{r}
+```{r, echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=6, fig.cap="Abstract Syntax Tree \\label{AST_alert_1}"}
 
 
 graph_old_reverted <- graph_old_with_alert %>% 
   activate(edges) %>% 
   reroute(from = to, to = from)
 
-
-nodes_alerts <- graph_old_reverted %>% 
+nodes_alerts_old <- graph_old_reverted %>% 
   activate(nodes) %>% 
+  filter(!is.na(id_alert_alert)) %>% 
+  select(id_alert) %>% 
   as_tibble()
 
-path <- graph_old_reverted %>% 
-    convert(to_shortest_path , from = 18, to = 1  , mode = "out" )
-  
-show_ast(path)
+
+nodes_path_from_alert <- function(graph, id_node){
+  output <- graph %>% 
+    convert(to_shortest_path , from = id_node, to = 1  , mode = "out" ) %>%
+    activate(nodes) %>% 
+    as_tibble() %>% 
+    select(id_group)
+}
+
+graph_path_from_alert <- function(graph, id_node){
+  output <- graph %>% 
+    convert(to_shortest_path , from = id_node, to = 1  , mode = "out" ) 
+}
+
+
+graphs_from_alerts <- nodes_alerts_old %>% 
+  mutate(graph = map(.x = id_alert, .f = ~graph_path_from_alert(graph = graph_old_reverted, id_node = .x )   )) %>% 
+  select(
+    graph,
+    everything()
+  )
+
+
+show_ast(graphs_from_alerts$graph[[1]], size_label = 4)
 
 
 ```
 
 
 
+```{r}
+
+
+
+
+```
 
