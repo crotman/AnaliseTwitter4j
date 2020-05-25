@@ -30,6 +30,8 @@ library(kableExtra)
 library(tidygraph)
 library(ggraph)
 library(patchwork)
+library(magrittr)
+
 
 knitr::opts_chunk$set(echo = FALSE, size = "small", warning = FALSE, message = FALSE, cache = FALSE)
 
@@ -750,7 +752,8 @@ map <- examples_sec2_crossed$lines_map[[1]] %>%
   select(   
     old = map_remove,
     new = map_add
-  ) 
+  ) %>% 
+  view()
 
 nodes_old <- read_raw_ast_nodes(
   code_location = "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree/code.java",
@@ -787,6 +790,7 @@ map_begin <- map %>%
   rename_all(
     ~str_glue("{.x}_begin")
   )
+
 
 map_end <- map %>% 
   rename_all(
@@ -847,6 +851,8 @@ match_nodes <- nodes_old %>%
   mutate(
     id_group = row_number()
   )
+
+
 
 graph_new_with_group <- graph_new %>% 
   activate(nodes) %>% 
@@ -1050,16 +1056,6 @@ The path between the alert and the root of the AST can be seen in \ref{AST_alert
 ```{r, echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=6, fig.cap="Abstract Syntax Tree \\label{AST_alert_1}"}
 
 
-graph_old_reverted <- graph_old_with_alert %>% 
-  activate(edges) %>% 
-  reroute(from = to, to = from)
-
-nodes_alerts_old <- graph_old_reverted %>% 
-  activate(nodes) %>% 
-  filter(!is.na(id_alert_alert)) %>% 
-  select(id_alert) %>% 
-  as_tibble()
-
 
 nodes_path_from_alert <- function(graph, id_node){
   output <- graph %>% 
@@ -1075,15 +1071,27 @@ graph_path_from_alert <- function(graph, id_node){
 }
 
 
-graphs_from_alerts <- nodes_alerts_old %>% 
-  mutate(graph = map(.x = id_alert, .f = ~graph_path_from_alert(graph = graph_old_reverted, id_node = .x )   )) %>% 
-  select(
-    graph,
-    everything()
-  )
+graph_old_reverted <- graph_old_with_alert %>% 
+  activate(edges) %>% 
+  reroute(from = to, to = from)
+
+nodes_alerts_old <- graph_old_reverted %>% 
+  activate(nodes) %>% 
+  filter(!is.na(id_alert_alert)) %>% 
+  select(id_alert) %>% 
+  as_tibble()
+
+graphs_from_alerts_old <- nodes_alerts_old %>% 
+  mutate(graph = map(.x = id_alert, .f = ~graph_path_from_alert(graph = graph_old_reverted, id_node = .x )   )) 
 
 
-show_ast(graphs_from_alerts$graph[[1]], size_label = 4)
+show_ast(graphs_from_alerts_old$graph[[1]], size_label = 4)
+
+graphs_from_alerts_old %<>% rename(
+  id_alert_old = id_alert,
+  graph_old = graph
+) 
+
 
 
 ```
@@ -1093,6 +1101,251 @@ show_ast(graphs_from_alerts$graph[[1]], size_label = 4)
 ```{r}
 
 
+coordinates <- map %>% 
+  ungroup() %>% 
+  mutate(common_line = row_number()) 
+
+graph_new_reverted <- graph_new_with_alert %>% 
+  activate(edges) %>% 
+  reroute(from = to, to = from)
+
+nodes_alerts_new <- graph_new_reverted %>% 
+  activate(nodes) %>% 
+  filter(!is.na(id_alert_alert)) %>% 
+  select(id_alert) %>% 
+  as_tibble()
+
+graphs_from_alerts_new <- nodes_alerts_new %>% 
+  mutate(graph = map(.x = id_alert, .f = ~graph_path_from_alert(graph = graph_new_reverted, id_node = .x )   )) 
+
+
+graphs_from_alerts_new %<>% rename(
+  id_alert_new = id_alert,
+  graph_new = graph
+) 
+
+
+
+
+
+match_alerts_alg2 <- graphs_from_alerts_new %>% 
+  crossing(graphs_from_alerts_old) 
+
+
+
+alert_old <- match_alerts_alg2$graph_old[[1]] %>% 
+  activate(nodes) %>% 
+  as_tibble() %>%
+  select(
+    beginline,
+    endline,
+    rule,
+    id_group,
+    method
+  ) %>% 
+  left_join(
+    coordinates %>% select(-new),
+    by = c("beginline" = "old")
+  ) %>% 
+  rename(
+    begin_common_line = common_line
+  ) %>% 
+  left_join(
+    coordinates %>%  select(-new),
+    by = c("endline" = "old")
+  ) %>% 
+  rename(
+    end_common_line = common_line
+  ) %>% 
+  mutate(
+    node = row_number()
+  ) %>% 
+  rename_all(
+    .funs = ~str_glue("{.x}_old")
+  )
+
+alert_new <- match_alerts_alg2$graph_new[[1]] %>% 
+  activate(nodes) %>% 
+  as_tibble() %>%
+  select(
+    beginline,
+    endline,
+    rule,
+    id_group,
+    method
+  ) %>% 
+  left_join(
+    coordinates %>% select(-old),
+    by = c("beginline" = "new")
+  ) %>% 
+  rename(
+    begin_common_line = common_line
+  ) %>% 
+  left_join(
+    coordinates %>%  select(-old),
+    by = c("endline" = "new")
+  ) %>% 
+  rename(
+    end_common_line = common_line
+  ) %>% 
+  mutate(
+    node = row_number()
+  ) %>% 
+  rename_all(
+    .funs = ~str_glue("{.x}_new")
+  )
+
+
+match_path <- alert_old %>% 
+  full_join(
+    alert_new,
+    by = c("node_old" = "node_new")
+  ) 
+
+
+features_match_path <- match_path %>% 
+  mutate(
+    last_method_id_old = if_else(
+      rule_old %in% c(
+        "compilation_unit", 
+        "constructor_declaration", 
+        "method"
+      ), 
+      id_group_old, 
+      NA_integer_
+    ),
+    last_method_id_new = if_else(rule_new %in% c(
+      "compilation_unit", 
+      "constructor_declaration", 
+      "method"
+      ), 
+      id_group_new, 
+      NA_integer_
+    ),
+    last_method_begin_line_old = if_else(
+      rule_old %in% c(
+        "compilation_unit", 
+        "constructor_declaration", 
+        "method"
+      ), 
+      begin_common_line_old, 
+      NA_integer_
+    ),
+    last_method_begin_line_new = if_else(rule_new %in% c(
+      "compilation_unit", 
+      "constructor_declaration", 
+      "method"
+      ), 
+      begin_common_line_new, 
+      NA_integer_
+    ),
+    last_method_end_line_old = if_else(
+      rule_old %in% c(
+        "compilation_unit", 
+        "constructor_declaration", 
+        "method"
+      ), 
+      end_common_line_old, 
+      NA_integer_
+    ),
+    last_method_end_line_new = if_else(rule_new %in% c(
+      "compilation_unit", 
+      "constructor_declaration", 
+      "method"
+      ),    
+      end_common_line_new, 
+      NA_integer_
+    ),
+
+    last_block_id_old = if_else(rule_old %in% c("compilation_unit","block"), id_group_old, NA_integer_),
+    last_block_id_new = if_else(rule_new %in% c("compilation_unit","block"), id_group_new, NA_integer_),
+
+    last_block_begin_line_old = if_else(rule_old %in% c("compilation_unit","block"), begin_common_line_old, NA_integer_),
+    last_block_begin_line_new = if_else(rule_new %in% c("compilation_unit","block"), begin_common_line_new, NA_integer_),
+    
+    last_block_end_line_old = if_else(rule_old %in% c("compilation_unit","block"), begin_common_line_old, NA_integer_),
+    last_block_end_line_new = if_else(rule_new %in% c("compilation_unit","block"), begin_common_line_new, NA_integer_),
+
+    last_class_begin_line_old = if_else(rule_old %in% c("compilation_unit","block"), begin_common_line_old, NA_integer_),
+    last_class_begin_line_new = if_else(rule_new %in% c("compilation_unit","block"), begin_common_line_new, NA_integer_),
+    
+    last_class_end_line_old = if_else(rule_old %in% c("compilation_unit","block"), begin_common_line_old, NA_integer_),
+    last_class_end_line_new = if_else(rule_new %in% c("compilation_unit","block"), begin_common_line_new, NA_integer_),
+
+        
+    last_id_group_old = id_group_old,
+    last_id_group_new = id_group_new,
+    
+    last_common_group_begin_line = if_else(
+      id_group_new == id_group_old, 
+      begin_common_line_old, 
+      NA_integer_
+    ),
+    
+    last_common_group_end_line = if_else(
+      id_group_new == id_group_old, 
+      end_common_line_old, 
+      NA_integer_
+    )
+    
+  ) %>% 
+  fill(
+    last_method_id_old,
+    last_method_id_new,
+    last_method_begin_line_new,
+    last_method_begin_line_old,
+    last_method_end_line_new,
+    last_method_end_line_old,
+    last_id_group_old,
+    last_id_group_new,
+    last_block_id_old,
+    last_block_id_new,
+    last_block_begin_line_old,
+    last_block_begin_line_new,
+    last_block_end_line_old,
+    last_block_end_line_new,
+    begin_common_line_new,
+    begin_common_line_old,
+    end_common_line_new,
+    end_common_line_old,
+    last_common_group_begin_line,
+    last_common_group_end_line,
+    id_group_new,
+    id_group_old
+  ) %>% 
+  mutate(
+    same_id_group = id_group_new == id_group_old,
+    same_method = last_method_id_new == last_method_id_old,
+    same_block = last_block_id_new == last_block_id_old,
+    last_common_group_mean_line = (last_common_group_begin_line + last_common_group_end_line)/2,
+    mean_line_new = (begin_common_line_new + end_common_line_new)/2,
+    mean_line_old = (begin_common_line_new + end_common_line_new)/2,
+    mean_line_last_common_group = (last_common_group_begin_line + last_common_group_end_line)/2
+  ) %>% 
+  select(
+    same_id_group,
+    same_method,
+    same_block,
+    dist_line,
+    everything()
+  ) %>% 
+  view()
+
+
+match_path %>% 
+  select(-node_old) %>% 
+  kable(
+    format = "latex",
+    caption = "Classifications of the alerts in the new version \\label{class_new}",
+    escape = FALSE,
+    booktabs = TRUE,
+    linesep = ""
+  ) %>%
+  kable_styling(
+    font_size = 6,
+    latex_options = c("hold_position", "striped")
+  )
+  
 
 
 ```
