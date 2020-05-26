@@ -739,7 +739,7 @@ We will consider the old version in Figure \ref{old_simple_code} and the new ver
 In Figure \ref{AST_compare} we can see the comparison between the two ASTs. 
 
 
-```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=8, fig.cap="Abstract Syntax Trees compared. New and old versions \\label{AST_compare}"}
+```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=8, fig.cap="Abstract Syntax Trees compared. New and old versions \\label{AST_compare}", fig.pos="H"}
 
 
 alerts_old <- examples_sec2_executed$pmd_output[[1]]
@@ -929,7 +929,7 @@ In Figure \ref{AST_groups} we can see both ASTs. The nodes with the same numbers
 
 
 
-```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=8, fig.cap="Abstract Syntax Tree \\label{AST_groups}"}
+```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=8, fig.cap="Abstract Syntax Tree \\label{AST_groups}", fig.pos="H"}
 
 chart_graph_old <- show_ast(
   graph_old_with_group, 
@@ -960,7 +960,7 @@ In Figure \ref{AST_with_alerts} we add the alerts that are related with nodes in
 
 
 
-```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=16, fig.cap="Abstract Syntax Tree \\label{AST_with_alerts}"}
+```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=20, fig.height=20, fig.cap="Abstract Syntax Tree \\label{AST_with_alerts}", fig.pos="H"}
 
 
 alerts_old <- examples_sec2_executed$pmd_output[[1]] %>% 
@@ -1023,7 +1023,7 @@ graph_new_with_alert <- graph_new_with_group %>%
 
 chart_graph_old <- show_ast(
   graph_old_with_alert, 
-  size_label = 4, 
+  size_label = 5, 
   show_label = TRUE, 
   alpha_label = 1, 
   node_text_field = "id_group",
@@ -1034,7 +1034,7 @@ chart_graph_old <- show_ast(
 
 chart_graph_new <- show_ast(
   graph_new_with_alert, 
-  size_label = 4, 
+  size_label = 5, 
   show_label = TRUE, 
   alpha_label = 1, 
   node_text_field = "id_group",
@@ -1053,7 +1053,7 @@ chart_graph_old + chart_graph_new
 The path between the alert and the root of the AST can be seen in \ref{AST_alert_1}
 
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=6, fig.cap="Abstract Syntax Tree \\label{AST_alert_1}"}
+```{r, echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=6, fig.cap="Abstract Syntax Tree \\label{AST_alert_1}", fig.pos="H"}
 
 
 
@@ -1098,6 +1098,26 @@ graphs_from_alerts_old %<>% rename(
 
 
 
+The algorithm generates some features that are related to each pair of alerts with one element coming from the old version and one elemtn coming from the new version.
+
+It´s not possible to infer without any doubt if a pair of elements refer to the same alert. But we think that these features can provide some clues. 
+
+This group of features can be an input to a heuristic or an appçication of machine learning that can decide if the alerts are the same.
+
+We propose the following list of features:
+
+* Same Group ID: a boolean indicator that tells if the alerts are equivalent as defined in Fugure \ref{AST_groups}
+
+* same_method,
+
+* same_block,
+
+* dist_line,
+
+* dist_line_normalized,
+
+
+
 ```{r}
 
 
@@ -1133,7 +1153,7 @@ match_alerts_alg2 <- graphs_from_alerts_new %>%
 
 
 
-alert_old <- match_alerts_alg2$graph_old[[1]] %>% 
+alert_old <- match_alerts_alg2$graph_old[[2]] %>% 
   activate(nodes) %>% 
   as_tibble() %>%
   select(
@@ -1164,7 +1184,7 @@ alert_old <- match_alerts_alg2$graph_old[[1]] %>%
     .funs = ~str_glue("{.x}_old")
   )
 
-alert_new <- match_alerts_alg2$graph_new[[1]] %>% 
+alert_new <- match_alerts_alg2$graph_new[[2]] %>% 
   activate(nodes) %>% 
   as_tibble() %>%
   select(
@@ -1286,8 +1306,10 @@ features_match_path <- match_path %>%
       id_group_new == id_group_old, 
       end_common_line_old, 
       NA_integer_
-    )
-    
+    ),
+
+
+        
   ) %>% 
   fill(
     last_method_id_old,
@@ -1319,32 +1341,36 @@ features_match_path <- match_path %>%
     same_block = last_block_id_new == last_block_id_old,
     last_common_group_mean_line = (last_common_group_begin_line + last_common_group_end_line)/2,
     mean_line_new = (begin_common_line_new + end_common_line_new)/2,
-    mean_line_old = (begin_common_line_new + end_common_line_new)/2,
-    mean_line_last_common_group = (last_common_group_begin_line + last_common_group_end_line)/2
+    mean_line_old = (begin_common_line_old + end_common_line_old)/2,
+    mean_line_last_common_group = (last_common_group_begin_line + last_common_group_end_line)/2,
+    dist_line = abs(mean_line_new - mean_line_old),
+    size_last_block = last_common_group_end_line - last_common_group_begin_line,
+    dist_line_normalized = dist_line/size_last_block
   ) %>% 
   select(
     same_id_group,
     same_method,
     same_block,
     dist_line,
+    dist_line_normalized,
     everything()
   ) %>% 
   view()
 
 
-match_path %>% 
-  select(-node_old) %>% 
-  kable(
-    format = "latex",
-    caption = "Classifications of the alerts in the new version \\label{class_new}",
-    escape = FALSE,
-    booktabs = TRUE,
-    linesep = ""
-  ) %>%
-  kable_styling(
-    font_size = 6,
-    latex_options = c("hold_position", "striped")
-  )
+# match_path %>% 
+#   select(-node_old) %>% 
+#   kable(
+#     format = "latex",
+#     caption = "Classifications of the alerts in the new version \\label{class_new}",
+#     escape = FALSE,
+#     booktabs = TRUE,
+#     linesep = ""
+#   ) %>%
+#   kable_styling(
+#     font_size = 6,
+#     latex_options = c("hold_position", "striped")
+#   )
   
 
 

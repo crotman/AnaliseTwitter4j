@@ -892,7 +892,7 @@ show_ast <-  function(
                 label.size = 0.3,
                 repel = TRUE,
                 size = size_label,
-                label.padding = 0.3,
+                label.padding = 0.4,
                 alpha = alpha_label
             )
         }
@@ -918,11 +918,12 @@ show_ast <-  function(
         
     ggraph(graph_dfs_tree, layout = "tree" ) +
         geom_edge_link(arrow = arrow(length = unit(2, 'mm')), 
-                       end_cap = circle(3, 'mm')) +    
+                       end_cap = circle(3, 'mm'), start_cap = circle(3, 'mm')) +    
         layer +
         geom_node_point(
             aes(color = method),
-            size = 8
+            size = 8,
+            shape = 21
         ) +
         geom_node_text(
             aes(label = .data[[node_text_field]]),
