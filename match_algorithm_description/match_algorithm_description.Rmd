@@ -1098,23 +1098,23 @@ graphs_from_alerts_old %<>% rename(
 
 
 
-The algorithm generates some features that are related to each pair of alerts with one element coming from the old version and one elemtn coming from the new version.
+The algorithm generates some features for each pair of alerts $(n,o)$ with one element $n$ coming from the old version and one element $o$ coming from the new version.
 
-It´s not possible to infer without any doubt if a pair of elements refer to the same alert. But we think that these features can provide some clues. 
+Even though it's not possible to be sure that a pair of elements refer to the same alert, we think that these features can provide some clues. 
 
-This group of features can be an input to a heuristic or an appçication of machine learning that can decide if the alerts are the same.
+This group of features can be an input to a heuristic or a machine learning tool that can decide if the alerts are the same.
 
 We propose the following list of features:
 
-* Same Group ID: a boolean indicator that tells if the alerts are equivalent as defined in Fugure \ref{AST_groups}
+* Same Group ID: a boolean indicator that tells if the alerts are equivalent as defined in Figure \ref{AST_groups}
 
-* same_method,
+* Same Method: a boolean indicator that tells if the alerts belong to the same method. We know the alert's method following the path from the alert´s node to the root. The first node of the kind "method" found in this path defines the alert's method. If this is the same for $o$ and for $n$, then they belong to the same method.
 
-* same_block,
+* Same Block: a boolean indicator that show if the $o$ and $n$ belong to the same block. It is defined the same way the "Same method" indicator is defined.
 
-* dist_line,
+* Line distance: $o$ and $n$ have a begin line $b(o)$ and $b(n)$ and an end line $e(n)$ and $e(n)$. Line distance is $abs(mean(b(o), e(o)) - mean(b(n), e(n)))$
 
-* dist_line_normalized,
+* Normalized line distance: this is the line distance but normalized by the size of the last common node.
 
 
 

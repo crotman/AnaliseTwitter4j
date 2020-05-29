@@ -893,7 +893,8 @@ show_ast <-  function(
                 repel = TRUE,
                 size = size_label,
                 label.padding = 0.4,
-                alpha = alpha_label
+                alpha = alpha_label,
+                stroke = 4
             )
         }
         else{
@@ -905,7 +906,8 @@ show_ast <-  function(
                 label.size = 0.3,
                 repel = TRUE,
                 size = size_label,
-                label.padding = 0.3
+                label.padding = 0.3,
+                stroke = 4
             )
         }
         
