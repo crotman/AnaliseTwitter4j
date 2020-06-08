@@ -1009,3 +1009,231 @@ cross_versions <- function(examples_executed){
 }
 
 
+calculate_features <-  function(graph_old, graph_new){
+    
+    alert_old <- graph_old %>% 
+        activate(nodes) %>% 
+        as_tibble() %>%
+        select(
+            beginline,
+            endline,
+            rule,
+            id_group,
+            method
+        ) %>% 
+        left_join(
+            coordinates %>% select(-new),
+            by = c("beginline" = "old")
+        ) %>% 
+        rename(
+            begin_common_line = common_line
+        ) %>% 
+        left_join(
+            coordinates %>%  select(-new),
+            by = c("endline" = "old")
+        ) %>% 
+        rename(
+            end_common_line = common_line
+        ) %>% 
+        mutate(
+            node = row_number()
+        ) %>% 
+        rename_all(
+            .funs = ~str_glue("{.x}_old")
+        )
+    
+    alert_new <- graph_new %>% 
+        activate(nodes) %>% 
+        as_tibble() %>%
+        select(
+            beginline,
+            endline,
+            rule,
+            id_group,
+            method
+        ) %>% 
+        left_join(
+            coordinates %>% select(-old),
+            by = c("beginline" = "new")
+        ) %>% 
+        rename(
+            begin_common_line = common_line
+        ) %>% 
+        left_join(
+            coordinates %>%  select(-old),
+            by = c("endline" = "new")
+        ) %>% 
+        rename(
+            end_common_line = common_line
+        ) %>% 
+        mutate(
+            node = row_number()
+        ) %>% 
+        rename_all(
+            .funs = ~str_glue("{.x}_new")
+        )
+    
+    
+    match_path <- alert_old %>% 
+        full_join(
+            alert_new,
+            by = c("node_old" = "node_new")
+        ) 
+    
+    
+    features_match_path <- match_path %>% 
+        mutate(
+            last_method_id_old = if_else(
+                rule_old %in% c(
+                    "compilation_unit", 
+                    "constructor_declaration", 
+                    "method"
+                ), 
+                id_group_old, 
+                NA_integer_
+            ),
+            last_method_id_new = if_else(rule_new %in% c(
+                "compilation_unit", 
+                "constructor_declaration", 
+                "method"
+            ), 
+            id_group_new, 
+            NA_integer_
+            ),
+            last_method_begin_line_old = if_else(
+                rule_old %in% c(
+                    "compilation_unit", 
+                    "constructor_declaration", 
+                    "method"
+                ), 
+                begin_common_line_old, 
+                NA_integer_
+            ),
+            last_method_begin_line_new = if_else(rule_new %in% c(
+                "compilation_unit", 
+                "constructor_declaration", 
+                "method"
+            ), 
+            begin_common_line_new, 
+            NA_integer_
+            ),
+            last_method_end_line_old = if_else(
+                rule_old %in% c(
+                    "compilation_unit", 
+                    "constructor_declaration", 
+                    "method"
+                ), 
+                end_common_line_old, 
+                NA_integer_
+            ),
+            last_method_end_line_new = if_else(rule_new %in% c(
+                "compilation_unit", 
+                "constructor_declaration", 
+                "method"
+            ),    
+            end_common_line_new, 
+            NA_integer_
+            ),
+            
+            last_block_id_old = if_else(rule_old %in% c("compilation_unit","block"), id_group_old, NA_integer_),
+            last_block_id_new = if_else(rule_new %in% c("compilation_unit","block"), id_group_new, NA_integer_),
+            
+            last_block_begin_line_old = if_else(rule_old %in% c("compilation_unit","block"), begin_common_line_old, NA_integer_),
+            last_block_begin_line_new = if_else(rule_new %in% c("compilation_unit","block"), begin_common_line_new, NA_integer_),
+            
+            last_block_end_line_old = if_else(rule_old %in% c("compilation_unit","block"), end_common_line_old, NA_integer_),
+            last_block_end_line_new = if_else(rule_new %in% c("compilation_unit","block"), end_common_line_new, NA_integer_),
+            
+            last_class_begin_line_old = if_else(rule_old %in% c("compilation_unit"), begin_common_line_old, NA_integer_),
+            last_class_begin_line_new = if_else(rule_new %in% c("compilation_unit"), begin_common_line_new, NA_integer_),
+            
+            last_class_end_line_old = if_else(rule_old %in% c("compilation_unit"), end_common_line_old, NA_integer_),
+            last_class_end_line_new = if_else(rule_new %in% c("compilation_unit"), end_common_line_new, NA_integer_),
+            
+            last_block_begin_line_old = if_else(rule_old %in% c("compilation_unit","block"), begin_common_line_old, NA_integer_),
+            last_block_begin_line_new = if_else(rule_new %in% c("compilation_unit","block"), begin_common_line_new, NA_integer_),
+            
+            
+            last_id_group_old = id_group_old,
+            last_id_group_new = id_group_new,
+            
+            last_common_group_begin_line = if_else(
+                id_group_new == id_group_old, 
+                begin_common_line_old, 
+                NA_integer_
+            ),
+            
+            last_common_group_end_line = if_else(
+                id_group_new == id_group_old, 
+                end_common_line_old, 
+                NA_integer_
+            ),
+            
+            
+            
+        ) %>% 
+        fill(
+            last_method_id_old,
+            last_method_id_new,
+            last_method_begin_line_new,
+            last_method_begin_line_old,
+            last_method_end_line_new,
+            last_method_end_line_old,
+            last_id_group_old,
+            last_id_group_new,
+            last_block_id_old,
+            last_block_id_new,
+            last_block_begin_line_old,
+            last_block_begin_line_new,
+            last_block_end_line_old,
+            last_block_end_line_new,
+            begin_common_line_new,
+            begin_common_line_old,
+            end_common_line_new,
+            end_common_line_old,
+            last_common_group_begin_line,
+            last_common_group_end_line,
+            id_group_new,
+            id_group_old,
+            last_class_begin_line_old,
+            last_class_begin_line_new,
+            last_class_end_line_old,
+            last_class_end_line_new
+        ) %>% 
+        mutate(
+            same_id_group = id_group_new == id_group_old,
+            same_method = last_method_id_new == last_method_id_old,
+            same_block = last_block_id_new == last_block_id_old,
+            last_common_group_mean_line = (last_common_group_begin_line + last_common_group_end_line)/2,
+            mean_line_new = (begin_common_line_new + end_common_line_new)/2,
+            mean_line_old = (begin_common_line_old + end_common_line_old)/2,
+            mean_line_last_common_group = (last_common_group_begin_line + last_common_group_end_line)/2,
+            dist_line = abs(mean_line_new - mean_line_old),
+            size_last_block = last_common_group_end_line - last_common_group_begin_line,
+            dist_line_normalized_block = dist_line/size_last_block,
+            size_unit = last_class_end_line_new - last_class_begin_line_new,
+            size_method = if_else(
+                same_method,
+                last_method_end_line_new - last_method_begin_line_new,
+                size_unit
+            ),  
+            dist_line_normalized_method = dist_line/size_method,
+            dist_line_normalized_unit = dist_line/size_unit
+        ) %>% 
+        select(
+            same_id_group,
+            same_method,
+            same_block,
+            dist_line,
+            dist_line_normalized_block,
+            dist_line_normalized_method,
+            dist_line_normalized_unit
+        ) %>% 
+        slice_tail(n = 1) 
+    
+    
+}
+
+
+
+
