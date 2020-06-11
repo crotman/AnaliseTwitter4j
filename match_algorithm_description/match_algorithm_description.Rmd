@@ -1,5 +1,5 @@
 ---
-title: "Match algorithm description"
+title: "Matching PMD Alerts"
 author: "Bruno Crotman"
 date: "04/05/2020"
 header-includes:
@@ -31,6 +31,7 @@ library(tidygraph)
 library(ggraph)
 library(patchwork)
 library(magrittr)
+library(scales)
 
 
 knitr::opts_chunk$set(echo = FALSE, size = "small", warning = FALSE, message = FALSE, cache = FALSE)
@@ -711,11 +712,18 @@ classifications_to_show %>%
 
 \subsection{Matches using the Abstract Syntax Tree and the relation between lines of code of the versions}\label{alg2}
 
+In this algorithm we use the AST to create features that help to infer if the alerts in different versions must be considered the same.
 
-In this algorithm we use the AST to infer if the alerts in different versions must be considered the same
+In the Section \ref{feature_creation}, we show how the features are created.
 
-We will consider the old version in Figure \ref{old_simple_code} and the new version in Figure \ref{new_simple_code}
+Even though it's not possible to be sure if a pair alerts in different versions are same alert, we think that these features can provide some clues.
 
+The features can be an input to a heuristic or a machine learning tool which can decide if the alerts are the same.
+
+
+\subsubsection{Features engineering} \label{feature_creation}
+
+In this Section, we will consider the old version in Figure \ref{old_simple_code} and the new version in Figure \ref{new_simple_code}
 
 \newpage
 
@@ -737,12 +745,7 @@ We will consider the old version in Figure \ref{old_simple_code} and the new ver
 
 
 
-In Figure \ref{AST_compare} we can see the comparison between the two ASTs. 
-
-
 ```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=8, fig.cap="Abstract Syntax Trees compared. New and old versions \\label{AST_compare}", fig.pos="H"}
-
-
 ##retoma aqui
 
 alerts_old <- examples_sec2_executed$pmd_output[[1]]
@@ -890,82 +893,6 @@ graph_old_with_group <- graph_old %>%
   )
 
 
-# chart_graph_old <- show_ast(graph_old_with_group, size_label = 1.5, node_text_field = "id_group") 
-# chart_graph_new <- show_ast(graph_new_with_group, size_label = 1.5, node_text_field = "id_group")
-
-chart_graph_old <- show_ast(
-  graph_old_with_group, 
-  size_label = 4, 
-  show_label = TRUE, 
-  alpha_label = "mostra", 
-  title = "Old version"
-) 
-
-chart_graph_new <- show_ast(
-  graph_new_with_group, 
-  size_label = 4, 
-  show_label = TRUE, 
-  alpha_label = "mostra",
-  title = "New version"
-)
-
-
-chart_graph_old + chart_graph_new
-
-
-
-# view(examples_sec2_crossed$lines_map[[1]])
-
-
-```
-
-
-
-We define that a node from an AST is equivalent to a node of the AST of the subsequent version if:
-
-- Considering the relation between the lines of the two versions constructed as we saw in Section \ref{map}, the nodes in both trees begin and end in related lines
-
-- The nodes are of the same kind
-
-
-In Figure \ref{AST_groups} we can see both ASTs. The nodes with the same numbers inside the nodes are equivalent 
-
-
-
-```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=8, fig.cap="Abstract Syntax Tree \\label{AST_groups}", fig.pos="H"}
-
-chart_graph_old <- show_ast(
-  graph_old_with_group, 
-  size_label = 4, 
-  show_label = TRUE, 
-  alpha_label = 0, 
-  node_text_field = "id_group" 
-)
-
-chart_graph_new <- show_ast(
-  graph_new_with_group, 
-  size_label = 4, 
-  show_label = TRUE, 
-  alpha_label = 0, 
-  node_text_field = "id_group" 
-)
-
-
-chart_graph_old + chart_graph_new
-
-
-
-```
-
-
-
-In Figure \ref{AST_with_alerts} we add the alerts that are related with nodes in the AST.
-
-
-
-```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=20, fig.height=20, fig.cap="Abstract Syntax Tree \\label{AST_with_alerts}", fig.pos="H"}
-
-
 alerts_old <- examples_sec2_executed$pmd_output[[1]] %>% 
   rename_all(
     ~str_glue("{.x}_alert")
@@ -999,7 +926,16 @@ graph_old_with_alert <- graph_old_with_group %>%
     text_alert = if_else(is.na(id_alert_alert),
     "",
     str_glue("{id_group}-{rule_alert}") %>%  as.character()
+    ),
+    
+    text_alert_id_node = if_else(is.na(id_alert_alert),
+    "",
+    str_glue("{id_alert}-{rule_alert}") %>%  as.character()
     )
+    
+    
+    
+    
   ) 
 
 
@@ -1020,8 +956,122 @@ graph_new_with_alert <- graph_new_with_group %>%
     text_alert = if_else(is.na(id_alert_alert),
     "",
     str_glue("{id_group}-{rule_alert}") %>%  as.character()
+    ),
+    
+    text_alert_id_node = if_else(is.na(id_alert_alert),
+    "",
+    str_glue("{id_alert}-{rule_alert}") %>%  as.character()
     )
+    
   ) 
+
+
+
+
+# chart_graph_old <- show_ast(graph_old_with_group, size_label = 1.5, node_text_field = "id_group") 
+# chart_graph_new <- show_ast(graph_new_with_group, size_label = 1.5, node_text_field = "id_group")
+```
+
+In Figure \ref{AST_compare} we can see both ASTs, from the old and the new version. In this figure, the number of the nodes are meaningless. We can see the alerts linked to its nodes.
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=20, fig.height=20, fig.cap="Abstract Syntax Trees. New and old versions \\label{AST_compare_id_alerts}", fig.pos="H"}
+
+
+chart_graph_old <- show_ast(
+  graph_old_with_alert, 
+  size_label = 5, 
+  show_label = TRUE, 
+  alpha_label = 1, 
+  name_field = "text_alert_id_node"
+  
+)
+
+
+chart_graph_new <- show_ast(
+  graph_new_with_alert, 
+  size_label = 5, 
+  show_label = TRUE, 
+  alpha_label = 1, 
+  name_field = "text_alert_id_node"
+  
+)
+
+
+chart_graph_old + chart_graph_new
+
+
+```
+
+
+
+
+```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=8, fig.cap="Abstract Syntax Trees compared. New and old versions \\label{AST_compare}", fig.pos="H"}
+chart_graph_old <- show_ast(
+  graph_old_with_group, 
+  size_label = 4, 
+  show_label = TRUE, 
+  alpha_label = "mostra", 
+  title = "Old version"
+) 
+
+chart_graph_new <- show_ast(
+  graph_new_with_group, 
+  size_label = 4, 
+  show_label = TRUE, 
+  alpha_label = "mostra",
+  title = "New version"
+)
+
+
+chart_graph_old + chart_graph_new
+
+
+
+# view(examples_sec2_crossed$lines_map[[1]])
+
+
+```
+
+
+
+In Figure \ref{AST_groups} the nodes with the same numbers defined as equivalent. We define that a node from an AST is equivalent to a node of the AST of the subsequent version if:
+
+- Considering the relation between the lines of the two versions constructed as we saw in Section \ref{map}, the nodes in both trees begin and end in related lines
+
+- The nodes are of the same kind
+
+
+```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=8, fig.cap="Abstract Syntax Tree \\label{AST_groups}", fig.pos="H"}
+
+chart_graph_old <- show_ast(
+  graph_old_with_group, 
+  size_label = 4, 
+  show_label = TRUE, 
+  alpha_label = 0, 
+  node_text_field = "id_group" 
+)
+
+chart_graph_new <- show_ast(
+  graph_new_with_group, 
+  size_label = 4, 
+  show_label = TRUE, 
+  alpha_label = 0, 
+  node_text_field = "id_group" 
+)
+
+
+chart_graph_old + chart_graph_new
+
+
+
+```
+
+
+In Figure \ref{AST_with_alerts} we add the alerts that are related with nodes in the AST.
+
+
+```{r , echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=20, fig.height=20, fig.cap="Abstract Syntax Tree \\label{AST_with_alerts}", fig.pos="H"}
 
 
 chart_graph_old <- show_ast(
@@ -1051,7 +1101,6 @@ chart_graph_old + chart_graph_new
 
 
 ```
-
 
 The path between the alert and the root of the AST can be seen in \ref{AST_alert_1}
 
@@ -1099,13 +1148,7 @@ graphs_from_alerts_old %<>% rename(
 
 ```
 
-
-
-The algorithm generates some features for each pair of alerts $(n,o)$ with one element $n$ coming from the old version and one element $o$ coming from the new version.
-
-Even though it's not possible to be sure that a pair of elements refer to the same alert, we think that these features can provide some clues. 
-
-This group of features can be an input to a heuristic or a machine learning tool that can decide if the alerts are the same.
+The algorithm generates a set of features for each pair of alerts $(n,o)$ with one element $n$ coming from the old version and one element $o$ coming from the new version.
 
 We propose the following list of features:
 
@@ -1152,10 +1195,65 @@ match_alerts_alg2 <- graphs_from_alerts_new %>%
   crossing(graphs_from_alerts_old) %>% 
   rowwise() %>% 
   mutate(
-    features = calculate_features(graph_old = graph_old, graph_new = graph_new)
+    features = calculate_features(graph_old = graph_old, graph_new = graph_new) %>% list()
   ) 
 
 
+```
+
+
+Table \ref{table_features} shows the combinations $(n,o)$ in the example. There are $2 \cdot 1 = 2$ combinations whereas we have two alerts in the old version and one alert in the new one. The alert ids are the original ones, shown in Figure \ref{AST_compare_id_alerts}.  
+
+
+```{r}
+
+  match_alerts_alg2 %>%
+  select(
+    starts_with("id_alert") | starts_with("features")
+  ) %>%
+  unnest(
+    features
+  ) %>%
+  mutate(
+    across(
+      where(is.numeric) & !starts_with("id_alert"),
+      ~number(.x, accuracy = 0.01)
+    )
+  ) %>% 
+  mutate(
+    across(
+      where(is.numeric) & !starts_with("id_alert"),
+      ~number(.x, accuracy = 0.01)
+    )
+  ) %>% 
+  kable(
+    format = "latex",
+    caption = "Classifications of the alerts in the old version \\label{table_features}",
+    escape = FALSE,
+    booktabs = TRUE,
+    align = "r",
+    linesep = "",
+    col.names = c(
+      "Alert id\n(new version)",
+      "Alert id\n(old version)",
+      "Same\nGroup",
+      "Same\nMethod",
+      "Same\nBlock",
+      "Line Distance",
+      "Line Distance\nnormalized by block)",
+      "Line Distance\nnormalized by block)",
+      "Line Distance\nnormalized by complie unit)"
+    ) %>% linebreak()
+  ) %>%
+  kable_styling(
+    font_size = 6,
+    latex_options = c("hold_position", "striped")
+  ) 
+
 
 ```
+
+
+
+
 

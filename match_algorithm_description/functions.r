@@ -614,8 +614,7 @@ decorate_code_alerts_mapped <-
                     "/*{line_old}-{rule_old}*/{code_old}/*{line_new}-{rule_new}*/{code_new}"
                 )
             ) %>%
-            pull(final_code) %>% 
-            view()
+            pull(final_code) 
         
         
         
@@ -1011,6 +1010,9 @@ cross_versions <- function(examples_executed){
 
 calculate_features <-  function(graph_old, graph_new){
     
+    # graph_new <- graphs_from_alerts_new$graph_new[[2]]
+    # graph_old <- graphs_from_alerts_old$graph_old[[2]]
+
     alert_old <- graph_old %>% 
         activate(nodes) %>% 
         as_tibble() %>%
@@ -1201,7 +1203,7 @@ calculate_features <-  function(graph_old, graph_new){
             last_class_end_line_new
         ) %>% 
         mutate(
-            same_id_group = id_group_new == id_group_old,
+            same_id_group = id_group_new == id_group_old,  
             same_method = last_method_id_new == last_method_id_old,
             same_block = last_block_id_new == last_block_id_old,
             last_common_group_mean_line = (last_common_group_begin_line + last_common_group_end_line)/2,
@@ -1210,7 +1212,7 @@ calculate_features <-  function(graph_old, graph_new){
             mean_line_last_common_group = (last_common_group_begin_line + last_common_group_end_line)/2,
             dist_line = abs(mean_line_new - mean_line_old),
             size_last_block = last_common_group_end_line - last_common_group_begin_line,
-            dist_line_normalized_block = dist_line/size_last_block,
+            dist_line_normalized_block = dist_line/if_else(size_last_block == 0, 1L , size_last_block ),
             size_unit = last_class_end_line_new - last_class_begin_line_new,
             size_method = if_else(
                 same_method,
@@ -1230,8 +1232,7 @@ calculate_features <-  function(graph_old, graph_new){
             dist_line_normalized_unit
         ) %>% 
         slice_tail(n = 1) 
-    
-    
+
 }
 
 
