@@ -1238,3 +1238,196 @@ calculate_features <-  function(graph_old, graph_new){
 
 
 
+calculate_features_from_versions <- function(code_file_new, code_file_old ){
+    
+    # code_file_old <- "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree/code.java"
+    # code_file_new <- "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree-new/code.java"
+    
+    output_old <-  code_file_old %>% 
+        str_replace(".java", ".xml") 
+    
+    output_new <-  code_file_new %>% 
+        str_replace(".java", ".xml") 
+    
+    nodes_old <- read_raw_ast_nodes(
+        code_location = code_file_old,
+        output_location <-  output_old
+    )
+    
+    graph_old <- generate_ast_tree_from_raw_nodes(nodes_old)
+    
+    nodes_new <- read_raw_ast_nodes(
+        code_location = code_file_new,
+        output_location <-  output_new
+    )
+    
+    graph_new <- generate_ast_tree_from_raw_nodes(nodes_new)
+    
+    nodes_new <- graph_new %>% 
+        activate(nodes) %>% 
+        as_tibble() %>% 
+        rename_all(
+            ~str_glue("{.x}_new")
+        )
+    
+    nodes_old <- graph_old %>% 
+        activate(nodes) %>% 
+        as_tibble() %>% 
+        rename_all(
+            ~str_glue("{.x}_old")
+        ) 
+    
+    
+    map_begin <- map %>% 
+        rename_all(
+            ~str_glue("{.x}_begin")
+        )
+    
+    
+    map_end <- map %>% 
+        rename_all(
+            ~str_glue("{.x}_end")
+        )
+    
+    
+    match_nodes <- nodes_old %>% 
+        left_join(
+            map_begin,
+            by = c("beginline_old" = "old_begin")
+        ) %>% 
+        left_join(
+            map_end,
+            by = c("endline_old" = "old_end")
+        ) %>% 
+        left_join(
+            nodes_new,
+            by = c( 
+                "new_begin" = "beginline_new",
+                "new_end" = "endline_new",
+                "rule_old" = "rule_new"
+            )
+        ) %>%
+        group_by(
+            id_alert_old
+        ) %>% 
+        mutate(
+            n_old = n()
+        ) %>%   
+        group_by(
+            id_alert_new
+        ) %>% 
+        mutate(
+            n_new = n()
+        ) %>% 
+        ungroup() %>% 
+        filter(
+            (n_old == 1 & n_new == 1) | (begincolumn_new == begincolumn_old & begincolumn_old == begincolumn_new)
+        ) %>% 
+        group_by(
+            id_alert_old
+        ) %>% 
+        mutate(
+            n_old = n()
+        ) %>% 
+        group_by(
+            id_alert_new
+        ) %>% 
+        mutate(
+            n_new = n()
+        ) %>% 
+        ungroup() %>% 
+        select(
+            id_alert_new,
+            id_alert_old
+        ) %>% 
+        mutate(
+            id_group = row_number()
+        )
+    
+    
+    
+    graph_new_with_group <- graph_new %>% 
+        activate(nodes) %>% 
+        left_join(
+            match_nodes,
+            by = c("id_alert" = "id_alert_new" )
+        ) %>% 
+        select(
+            -id_alert_old 
+        ) %>% 
+        mutate(
+            mostra = case_when(
+                id_alert %in% c(10, 43, 17, 15, 18, 16, 45, 44) ~ 1,
+                TRUE ~ -1 
+            )
+        )
+    
+    graph_old_with_group <- graph_old %>% 
+        activate(nodes) %>% 
+        left_join(
+            match_nodes,
+            by = c("id_alert" = "id_alert_old" )
+        ) %>% 
+        select(
+            -id_alert_new 
+        ) %>% 
+        mutate(
+            mostra = case_when(
+                id_alert %in% c(10, 42, 41, 15, 16, 43) ~ 1,
+                TRUE ~ -1 
+            )
+        )
+    
+    
+    graph_old_reverted <- graph_old_with_alert %>% 
+        activate(edges) %>% 
+        reroute(from = to, to = from)
+    
+    nodes_alerts_old <- graph_old_reverted %>% 
+        activate(nodes) %>% 
+        filter(!is.na(id_alert_alert)) %>% 
+        select(id_alert) %>% 
+        as_tibble()
+    
+    graphs_from_alerts_old <- nodes_alerts_old %>% 
+        mutate(graph = map(.x = id_alert, .f = ~graph_path_from_alert(graph = graph_old_reverted, id_node = .x )   )) 
+    
+    
+    graphs_from_alerts_old %<>% rename(
+        id_alert_old = id_alert,
+        graph_old = graph
+    ) 
+    
+    
+    graph_new_reverted <- graph_new_with_alert %>% 
+        activate(edges) %>% 
+        reroute(from = to, to = from)
+    
+    nodes_alerts_new <- graph_new_reverted %>% 
+        activate(nodes) %>% 
+        filter(!is.na(id_alert_alert)) %>% 
+        select(id_alert) %>% 
+        as_tibble()
+    
+    graphs_from_alerts_new <- nodes_alerts_new %>% 
+        mutate(graph = map(.x = id_alert, .f = ~graph_path_from_alert(graph = graph_new_reverted, id_node = .x )   )) 
+    
+    
+    graphs_from_alerts_new %<>% rename(
+        id_alert_new = id_alert,
+        graph_new = graph
+    ) 
+    
+    
+    match_alerts_alg2 <- graphs_from_alerts_new %>% 
+        crossing(graphs_from_alerts_old) %>% 
+        rowwise() %>% 
+        mutate(
+            features = calculate_features(graph_old = graph_old, graph_new = graph_new) %>% list()
+        ) 
+    
+    match_alerts_alg2
+    
+}
+
+
