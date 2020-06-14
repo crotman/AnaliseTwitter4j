@@ -1577,8 +1577,20 @@ calculate_features_from_versions <- function(code_file_new, code_file_old ){
             features = calculate_features(graph_old = graph_old, graph_new = graph_new, coordinates = coordinates) %>% list()
         ) 
     
-    match_alerts_alg2
     
+    saida <- list(
+        versions_executed = examples_sec2_executed,
+        graph_old_with_alert =  graph_old_with_alert,
+        graph_new_with_alert = graph_new_with_alert,
+        graph_old_with_group = graph_old_with_group,
+        graph_new_with_group = graph_new_with_group,
+        graphs_from_alerts_old = graphs_from_alerts_old,
+        graphs_from_alerts_new = graphs_from_alerts_new,
+        features = match_alerts_alg2
+    )
+    
+    saida
+
 }
 
 
