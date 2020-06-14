@@ -712,7 +712,7 @@ read_raw_ast_nodes <-  function(code_location, output_location ){
     
     code_all_lines <- read_lines(code_location)
     
-    read_pmd_xml(output_location) %>% 
+    returned_value <- read_pmd_xml(output_location) %>% 
         replace_na(
             list(
                 method = "No method"
@@ -735,7 +735,10 @@ read_raw_ast_nodes <-  function(code_location, output_location ){
             )
         )
     
+    print(output_location)
+    file.remove(output_location)
     
+    returned_value
 }
 
 
@@ -1003,12 +1006,11 @@ cross_versions <- function(examples_executed){
             .f = map_lines
         ))
     
-    
-    
+
 }
 
 
-calculate_features <-  function(graph_old, graph_new){
+calculate_features <-  function(graph_old, graph_new, coordinates){
     
     # graph_new <- graphs_from_alerts_new$graph_new[[2]]
     # graph_old <- graphs_from_alerts_old$graph_old[[2]]
@@ -1237,11 +1239,76 @@ calculate_features <-  function(graph_old, graph_new){
 
 
 
+nodes_path_from_alert <- function(graph, id_node){
+    output <- graph %>% 
+        convert(to_shortest_path , from = id_node, to = 1  , mode = "out" ) %>%
+        activate(nodes) %>% 
+        as_tibble() %>% 
+        select(id_group)
+}
+
+graph_path_from_alert <- function(graph, id_node){
+    output <- graph %>% 
+        convert(to_shortest_path , from = id_node, to = 1  , mode = "out" ) 
+}
+
+
+
 
 calculate_features_from_versions <- function(code_file_new, code_file_old ){
     
     # code_file_old <- "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree/code.java"
     # code_file_new <- "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree-new/code.java"
+
+    path_code_file_old <- code_file_old %>% 
+        str_remove("/[^/]*$") 
+    
+    path_code_file_new <- code_file_new %>% 
+        str_remove("/[^/]*$") 
+
+    output_code_file_old <- path_code_file_old %>% 
+        str_match("[^/]*$") 
+    
+    output_code_file_new <- path_code_file_new %>% 
+        str_match("[^/]*$") 
+    
+    examples_sec2 <- tribble(
+        
+        ~name,                  ~path,      ~output,          
+        "Simple old",  path_code_file_old ,  output_code_file_old %>% as.character(),
+        "Simple new",  path_code_file_new ,  output_code_file_new %>%  as.character(),
+        
+    ) %>% 
+        mutate(id = row_number()) 
+    
+    
+    examples_sec2_executed <- examples_sec2 %>%
+        mutate(pmd_command =
+                   map2(
+                       .x = path,
+                       .y = output,
+                       ~ assemble_pmd_command(
+                           pmd_path = pmd_path,
+                           code_path = .x ,
+                           rule_path = rule_path,
+                           output_path = output_path,
+                           output = .y
+                       )
+                   )) %>%
+        mutate(pmd_command_output = map(
+            .x = pmd_command,
+            .f =  ~ shell(cmd = .x, shell = "PowerShell")
+        )) %>%
+        mutate(pmd_output = map(.x = str_glue("{output_path}{output}.xml"), .f = read_pmd_xml))
+    
+    examples_sec2_crossed <- cross_versions(examples_sec2_executed) 
+    
+    map <- examples_sec2_crossed$lines_map[[1]] %>% 
+        select(   
+            old = map_remove,
+            new = map_add
+        )
+    
     
     output_old <-  code_file_old %>% 
         str_replace(".java", ".xml") 
@@ -1276,6 +1343,12 @@ calculate_features_from_versions <- function(code_file_new, code_file_old ){
         rename_all(
             ~str_glue("{.x}_old")
         ) 
+    
+    map <- examples_sec2_crossed$lines_map[[1]] %>% 
+        select(   
+            old = map_remove,
+            new = map_add
+        )
     
     
     map_begin <- map %>% 
@@ -1379,6 +1452,81 @@ calculate_features_from_versions <- function(code_file_new, code_file_old ){
         )
     
     
+    alerts_old <- examples_sec2_executed$pmd_output[[1]] %>% 
+        rename_all(
+            ~str_glue("{.x}_alert")
+        ) %>% 
+        mutate(
+            one = 1
+        )
+    
+    alerts_new <- examples_sec2_executed$pmd_output[[2]] %>% 
+        rename_all(
+            ~str_glue("{.x}_alert")
+        ) %>% 
+        mutate(
+            one = 1
+        )
+    
+    
+
+    graph_old_with_alert <- graph_old_with_group %>% 
+        activate(nodes) %>% 
+        mutate(
+            one = 1
+        ) %>% 
+        left_join(
+            alerts_old,
+            by = c(
+                "beginline" = "beginline_alert", 
+                "endline" = "endline_alert", 
+                "begincolumn" = "begincolumn_alert", 
+                "endcolumn" = "endcolumn_alert")
+        ) %>% 
+        mutate(
+            text_alert = if_else(is.na(id_alert_alert),
+                                 "",
+                                 str_glue("{id_group}-{rule_alert}") %>%  as.character()
+            ),
+            
+            text_alert_id_node = if_else(is.na(id_alert_alert),
+                                         "",
+                                         str_glue("{id_alert}-{rule_alert}") %>%  as.character()
+            )
+            
+            
+            
+            
+        ) 
+    
+    
+    graph_new_with_alert <- graph_new_with_group %>% 
+        activate(nodes) %>% 
+        mutate(
+            one = 1
+        ) %>% 
+        left_join(
+            alerts_new,
+            by = c(
+                "beginline" = "beginline_alert", 
+                "endline" = "endline_alert", 
+                "begincolumn" = "begincolumn_alert", 
+                "endcolumn" = "endcolumn_alert")
+        ) %>% 
+        mutate(
+            text_alert = if_else(is.na(id_alert_alert),
+                                 "",
+                                 str_glue("{id_group}-{rule_alert}") %>%  as.character()
+            ),
+            
+            text_alert_id_node = if_else(is.na(id_alert_alert),
+                                         "",
+                                         str_glue("{id_alert}-{rule_alert}") %>%  as.character()
+            )
+            
+        ) 
+    
+
     graph_old_reverted <- graph_old_with_alert %>% 
         activate(edges) %>% 
         reroute(from = to, to = from)
@@ -1418,12 +1566,15 @@ calculate_features_from_versions <- function(code_file_new, code_file_old ){
         graph_new = graph
     ) 
     
+    coordinates <- map %>% 
+        ungroup() %>% 
+        mutate(common_line = row_number()) 
     
     match_alerts_alg2 <- graphs_from_alerts_new %>% 
         crossing(graphs_from_alerts_old) %>% 
         rowwise() %>% 
         mutate(
-            features = calculate_features(graph_old = graph_old, graph_new = graph_new) %>% list()
+            features = calculate_features(graph_old = graph_old, graph_new = graph_new, coordinates = coordinates) %>% list()
         ) 
     
     match_alerts_alg2

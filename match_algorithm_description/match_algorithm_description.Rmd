@@ -212,7 +212,7 @@ map_rule_small <- tribble(
     ~rule,                              ~small_rule,
     "class_or_interface_body",          "class_body",                   
     "class_or_interface_declaration",   "class_decl",
-    "class_or_interface_type",          "class_type",
+      "class_or_interface_type",          "class_type",
     "compilation_unit",                 "unit",
     "extends_list",                     "extends",
     "implements_list",                  "implements",
@@ -320,7 +320,7 @@ These are the steps of the algorithm:
 
 1. Generate a list of alerts from each version (old and new) using PMD Alert (Section \ref{codes});
 2. Generate the git diff between the two versions (Section \ref{diff});
-3. Using information from git diff, create a map between the lines (Section \ref{map});
+3. Using information from git diff, create a = map between the lines (Section \ref{map});
 4. Categorize the alerts (Section \ref{categorize}).
 
 
@@ -752,12 +752,12 @@ alerts_old <- examples_sec2_executed$pmd_output[[1]]
 
 alerts_new <- examples_sec2_executed$pmd_output[[2]]
 
-examples_sec2_crossed <- cross_versions(examples_sec2) 
+examples_sec2_crossed <- cross_versions(examples_sec2_executed) 
 
 map <- examples_sec2_crossed$lines_map[[1]] %>% 
   select(   
     old = map_remove,
-    new = map_add
+     new = map_add
   )
 
 
@@ -1108,21 +1108,6 @@ The path between the alert and the root of the AST can be seen in \ref{AST_alert
 ```{r, echo=FALSE, message=FALSE, warning=FALSE,  out.width="100%", fig.width=12, fig.height=6, fig.cap="Abstract Syntax Tree \\label{AST_alert_1}", fig.pos="H"}
 
 
-
-nodes_path_from_alert <- function(graph, id_node){
-  output <- graph %>% 
-    convert(to_shortest_path , from = id_node, to = 1  , mode = "out" ) %>%
-    activate(nodes) %>% 
-    as_tibble() %>% 
-    select(id_group)
-}
-
-graph_path_from_alert <- function(graph, id_node){
-  output <- graph %>% 
-    convert(to_shortest_path , from = id_node, to = 1  , mode = "out" ) 
-}
-
-
 graph_old_reverted <- graph_old_with_alert %>% 
   activate(edges) %>% 
   reroute(from = to, to = from)
@@ -1195,7 +1180,7 @@ match_alerts_alg2 <- graphs_from_alerts_new %>%
   crossing(graphs_from_alerts_old) %>% 
   rowwise() %>% 
   mutate(
-    features = calculate_features(graph_old = graph_old, graph_new = graph_new) %>% list()
+    features = calculate_features(graph_old = graph_old, graph_new = graph_new, coordinates = coordinates ) %>% list()
   ) 
 
 
@@ -1252,6 +1237,42 @@ Table \ref{table_features} shows the combinations $(n,o)$ in the example. There 
 
 
 ```
+
+
+teste
+
+
+```{r}
+
+
+teste <- calculate_features_from_versions(
+  code_file_new = "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree/code.java" ,
+  code_file_old = "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree-new/code.java"
+)
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
