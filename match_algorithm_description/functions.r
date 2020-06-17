@@ -708,7 +708,7 @@ extract_piece_of_code <-  function(strings_param, begin_line, end_line, begin_co
 read_raw_ast_nodes <-  function(code_location, output_location ){
     
     
-    shell(str_glue("C:/doutorado/AnaliseTwitter4j/pmd/bin/pmd.bat -d {code_location} -f xml -R C:/doutorado/AnaliseTwitter4j/match_algorithm_description/blockrules/blockrules.xml -reportfile {output_location}"))
+    system(str_glue("pmd/bin/pmd.bat -d {code_location} -f xml -R blockrules/blockrules.xml -reportfile {output_location}"))
     
     code_all_lines <- read_lines(code_location)
     
@@ -993,7 +993,7 @@ cross_versions <- function(examples_executed){
         mutate(
             output_diff_command = map(
                 .x = diff_command,
-                .f = ~ shell(cmd = .x, shell = "PowerShell")
+                .f = ~ system(command =  .x)
             ),
             file_diff = str_glue("{output_path}{output_left}_{output_right}.diff")
         ) %>%
@@ -1297,7 +1297,7 @@ calculate_features_from_versions <- function(code_file_new, code_file_old ){
                    )) %>%
         mutate(pmd_command_output = map(
             .x = pmd_command,
-            .f =  ~ shell(cmd = .x, shell = "PowerShell")
+            .f =  ~ system(command =  .x)
         )) %>%
         mutate(pmd_output = map(.x = str_glue("{output_path}{output}.xml"), .f = read_pmd_xml))
     
