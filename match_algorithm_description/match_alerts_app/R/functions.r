@@ -706,7 +706,9 @@ extract_piece_of_code <-  function(strings_param, begin_line, end_line, begin_co
 
 
 read_raw_ast_nodes <-  function(code_location, output_location ){
-    
+
+    # code_location <- code_file_old
+    # output_location <- output_old
     
     system(str_glue("pmd/bin/pmd.bat -d {code_location} -f xml -R blockrules/blockrules.xml -reportfile {output_location}"))
     
@@ -973,7 +975,7 @@ cross_versions <- function(examples_executed){
         )
     
     
-    examples_executed_selected_fields_left %>%
+    saida <- examples_executed_selected_fields_left %>%
         crossing(examples_executed_selected_fields_right) %>%
         filter(id_left < id_right) %>%
         mutate(diff_command =
@@ -1006,6 +1008,7 @@ cross_versions <- function(examples_executed){
             .f = map_lines
         ))
     
+        saida
 
 }
 
@@ -1260,7 +1263,10 @@ calculate_features_from_versions <- function(code_file_new = "", code_file_old =
     # code_file_old <- "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree/code.java"
     # code_file_new <- "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree-new/code.java"
 
+    # code_new <- default_code_new
+    # code_old <- default_code_old
     
+
     if(code_new != ""){
         
         write_lines(code_new, "code_files_new/new.java")
@@ -1329,7 +1335,7 @@ calculate_features_from_versions <- function(code_file_new = "", code_file_old =
     
     nodes_old <- read_raw_ast_nodes(
         code_location = code_file_old,
-        output_location <-  output_old
+        output_location =  output_old
     )
     
     graph_old <- generate_ast_tree_from_raw_nodes(nodes_old)

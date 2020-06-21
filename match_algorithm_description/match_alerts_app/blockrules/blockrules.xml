@@ -1,0 +1,388 @@
+<?xml version="1.0"?>
+<ruleset name="complete"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+    <description>Test.</description>
+	
+	<rule name="method"
+      language="java"
+      message="method"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//MethodDeclaration
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+	<rule name="package"
+      language="java"
+      message="package"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//PackageDeclaration
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+	<rule name="compilation_unit"
+      language="java"
+      message="compilation_unit"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//CompilationUnit
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+	<rule name="import_declaration"
+      language="java"
+      message="import_declaration"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//ImportDeclaration
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+
+	<rule name="name"
+      language="java"
+      message="name"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//Name
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+
+
+	<rule name="class_or_interface_declaration"
+      language="java"
+      message="class_or_interface_declaration"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//ClassOrInterfaceDeclaration
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+
+	<rule name="extends_list"
+      language="java"
+      message="extends_list"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//ExtendsList
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+
+	<rule name="implements_list"
+      language="java"
+      message="implements_list"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//ImplementsList
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+
+	<rule name="class_or_interface_type"
+      language="java"
+      message="class_or_interface_type"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//ClassOrInterfaceType
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+
+	<rule name="field_declaration"
+      language="java"
+      message="field_declaration"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//FieldDeclaration
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+
+	<rule name="class_or_interface_body"
+      language="java"
+      message="class_or_interface_body"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//ClassOrInterfaceBody
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+
+	<rule name="constructor_declaration"
+      language="java"
+      message="constructor_declaration"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//ConstructorDeclaration
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+
+
+	<rule name="variable_id"
+      language="java"
+      message="variable_id"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//VariableDeclaratorId
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+	<rule name="formal_parameter"
+      language="java"
+      message="formal_parameter"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//FormalParameter
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+	<rule name="formal_parameters"
+      language="java"
+      message="formal_parameters"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//FormalParameters
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+
+	<rule name="annotation"
+      language="java"
+      message="annotation"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//Annotation
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+
+	<rule name="block"
+      language="java"
+      message="block"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//Block
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+
+	<rule name="statement"
+      language="java"
+      message="block_statement"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//Statement
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+
+
+	<rule name="if_statement"
+      language="java"
+      message="if_statement"
+      class="net.sourceforge.pmd.lang.rule.XPathRule" >
+    <description>
+TODO
+    </description>
+    <priority>3</priority>
+    <properties>
+        <property name="xpath">
+            <value>
+<![CDATA[
+//IfStatement
+]]>
+            </value>
+        </property>
+    </properties>
+	</rule>
+
+
+
+
+</ruleset>
