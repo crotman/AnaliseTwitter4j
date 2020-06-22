@@ -13,6 +13,21 @@ library(patchwork)
 library(magrittr)
 library(scales)
 library(magrittr)
+library(codeModules)
+
+decorate_code_shiny <-  function(code){
+    
+    linhas <- str_split(code, "\n") %>% 
+        enframe(name = "id", value = "string_linha") %>% 
+        unnest(string_linha) %>% 
+        mutate(linha = row_number()) %>% 
+        mutate(linha = str_pad(linha, width = 3)) %>% 
+        mutate(string = str_glue("{linha}:   {string_linha}")) %>% 
+        pull(string) %>% 
+        str_flatten(collapse = "\n") 
+    
+    
+}
 
 
 map_rule_small <- tribble(
@@ -51,8 +66,11 @@ length_alert_name_side_by_side <- 20
 
 size_line_of_code_side_by_side <- 110
 
-
-pmd_path <- "pmd/bin/pmd.bat"
+if (Sys.info() == "Windows"){
+    pmd_path <- "pmd/bin/pmd.bat"
+}else{
+    pmd_path <-"$HOME/pmd-bin-6.24.0/bin/run.sh pmd"    
+}
 
 rule_path <- "rulesets/java/quickstart.xml"
 
@@ -64,6 +82,21 @@ default_code_old <- read_file("default_old/code.java")
 
 source("R/functions.R")
 
+input_old_code <- textAreaInput(
+    inputId = "input_old_code",
+    label = "Old code",
+    rows = 20,
+    width = "250%",
+    value = default_code_old
+)
+
+input_new_code <- textAreaInput(
+    inputId = "input_new_code",
+    label = "New code",
+    rows = 20,
+    width = "250%",
+    value = default_code_new
+)
 
 
 
@@ -72,34 +105,31 @@ ui <- fluidPage(
 
     # Application title
     titlePanel("Match alerts"),
-    splitLayout(
+    actionButton(inputId = "go_button",label = "Run!"),
+    splitLayout(cellWidths = c("40%","60%"),
         accordion(        
             accordionItem(
                 id = "old",
                 title = "Old Code",
-                textAreaInput(
-                    inputId = "input_old_code",
-                    label = "Old code",
-                    rows = 70,
-                    width = "250%",
-                    value = default_code_old
-                )
+                input_old_code
+                
             ),
             accordionItem(
                 id = "new",
                 title = "New Code",
-                textAreaInput(
-                    inputId = "input_new_code",
-                    label = "New code",
-                    width = "250%",
-                    rows = 70,
-                    value = default_code_new
-                )
+                input_new_code
             )
         )
         ,
-        gt_output(
-            outputId = "tabela"
+        verticalLayout(
+            splitLayout(
+                codeOutput(outputId = "old_code_out"),
+                codeOutput(outputId = "new_code_out")
+            )
+            ,
+            gt_output(
+                outputId = "tabela"
+            )
         )
     )
         
@@ -115,17 +145,86 @@ server <- function(input, output) {
         
     }) 
     
-    features <- reactive({
-     
-        saida_algoritmo <- saida_algoritmo()$features 
-        saida_algoritmo
-    })
-    
+
     output$tabela <- render_gt({
         
-        gt(features())
+        if(input$go_button == 0){
+            return()
+        }
+        
+        dados <- isolate(saida_algoritmo())
+            
+        alerts_old <- dados$graph_old_with_alert %>% 
+            activate(nodes) %>% 
+            as_tibble() %>% 
+            filter(!is.na(id_alert_alert)) %>% 
+            select(
+                begin_line_old = beginline,
+                id_alert_old = id_alert,
+                rule_alert_old = rule_alert
+            )
+        
+
+        alerts_new <- dados$graph_new_with_alert %>% 
+            activate(nodes) %>% 
+            as_tibble() %>% 
+            filter(!is.na(id_alert_alert)) %>% 
+            select(
+                begin_line_new = beginline,
+                id_alert_new = id_alert,
+                rule_alert_new = rule_alert
+            )
+        
+                
+        features <- dados$features %>% 
+            select(-c(graph_new, graph_old)) %>% 
+            unnest(features) %>%
+            left_join(
+                alerts_old,
+                by = c("id_alert_old")
+            ) %>% 
+            left_join(
+                alerts_new,
+                by = c("id_alert_new")
+            ) 
+
+        features %>% 
+            select(
+                begin_line_old,
+                begin_line_new,
+                rule_alert_old,
+                rule_alert_new,
+                same_rule,
+                same_id_group,
+                same_method,
+                same_block,
+                dist_line,
+                dist_line_normalized_block,
+                dist_line_normalized_method,
+                dist_line_normalized_unit
+            ) %>% 
+            arrange(
+                begin_line_old,
+                begin_line_new
+            ) %>% 
+            gt() 
+            
+            
         
     })
+    
+    output$old_code_out <- renderCode({
+        saida <- decorate_code_shiny(input$input_old_code)
+        saida
+    })
+
+    
+    output$new_code_out <- renderCode({
+        saida <- decorate_code_shiny(input$input_new_code)
+        saida
+    })
+    
+        
 }
 
 # Run the application 

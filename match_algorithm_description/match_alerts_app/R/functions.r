@@ -1026,7 +1026,8 @@ calculate_features <-  function(graph_old, graph_new, coordinates){
             endline,
             rule,
             id_group,
-            method
+            method,
+            rule_alert
         ) %>% 
         left_join(
             coordinates %>% select(-new),
@@ -1057,7 +1058,8 @@ calculate_features <-  function(graph_old, graph_new, coordinates){
             endline,
             rule,
             id_group,
-            method
+            method,
+            rule_alert
         ) %>% 
         left_join(
             coordinates %>% select(-old),
@@ -1174,7 +1176,7 @@ calculate_features <-  function(graph_old, graph_new, coordinates){
                 id_group_new == id_group_old, 
                 end_common_line_old, 
                 NA_integer_
-            ),
+            )
             
             
             
@@ -1205,9 +1207,12 @@ calculate_features <-  function(graph_old, graph_new, coordinates){
             last_class_begin_line_old,
             last_class_begin_line_new,
             last_class_end_line_old,
-            last_class_end_line_new
-        ) %>% 
+            last_class_end_line_new,
+            rule_alert_new, 
+            rule_alert_old
+        ) %>%
         mutate(
+            same_rule = rule_alert_new == rule_alert_old,
             same_id_group = id_group_new == id_group_old,  
             same_method = last_method_id_new == last_method_id_old,
             same_block = last_block_id_new == last_block_id_old,
@@ -1228,6 +1233,7 @@ calculate_features <-  function(graph_old, graph_new, coordinates){
             dist_line_normalized_unit = dist_line/size_unit
         ) %>% 
         select(
+            same_rule,
             same_id_group,
             same_method,
             same_block,
