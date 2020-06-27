@@ -69,7 +69,7 @@ size_line_of_code_side_by_side <- 110
 if (Sys.info() == "Windows"){
     pmd_path <- "pmd/bin/pmd.bat"
 }else{
-    pmd_path <-"$HOME/pmd-bin-6.24.0/bin/run.sh pmd"    
+    pmd_path <- "$HOME/pmd-bin-6.24.0/bin/run.sh pmd"    
 }
 
 rule_path <- "rulesets/java/quickstart.xml"
@@ -89,12 +89,12 @@ input_old_code <- textAreaInput(
     width = "250%",
     value = default_code_old
 )
-
+ 
 input_new_code <- textAreaInput(
     inputId = "input_new_code",
     label = "New code",
     rows = 20,
-    width = "250%",
+    width = "250%",  
     value = default_code_new
 )
 

@@ -71,7 +71,7 @@ map_rule_small <- tribble(
 
  
 
-source("functions.r", encoding = "UTF-8") 
+source("match_alerts_app/R/functions.r", encoding = "UTF-8") 
 
 
 ```
@@ -166,8 +166,8 @@ In Figure \ref{simple_code}, we can see an example of a simple code and the aler
 ```{r}
 
 saida_alg2 <- calculate_features_from_versions(
-  code_file_old = "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree/code.java",
-  code_file_new = "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree-new/code.java"
+  code_file_old = "little-tree/code.java",
+  code_file_new = "little-tree-new/code.java"
 )
 
 
@@ -880,29 +880,50 @@ We propose the following list of features:
 * Normalized line distance: this is the line distance but normalized by the size of the last common node.
 
 
-Table \ref{table_features} shows the combinations $(n,o)$ in the example. There are $2 \cdot 1 = 2$ combinations whereas we have two alerts in the old version and one alert in the new one. The alert ids are the original ones, shown in Figure \ref{AST_compare_id_alerts}.  
+Table \ref{table_features} shows the combinations $(n,o)$ in the example. There are $2 \cdot 1 = 2$ combinations whereas we have two alerts in the old version and one alert in the new one.  
 
 
 ```{r}
 
+  old_lines <- saida_alg2$graph_old_with_alert %>%
+    activate(nodes) %>% 
+    as_tibble() %>% 
+    filter(!is.na(id_alert_alert)) %>% 
+    select(id_alert, beginline) %>% 
+    rename_with( ~str_glue("{.x}_old")) 
+  
+  new_lines <- saida_alg2$graph_new_with_alert %>%
+    activate(nodes) %>% 
+    as_tibble() %>% 
+    filter(!is.na(id_alert_alert)) %>% 
+    select(id_alert, beginline) %>% 
+    rename_with( ~str_glue("{.x}_new")) 
+
+
   saida_alg2$features %>%
+  unnest(features, .sep = ".") %>% 
   select(
     starts_with("id_alert") | starts_with("features")
   ) %>%
-  unnest(
-    features
-  ) %>%
-  mutate(
-    across(
-      where(is.numeric) & !starts_with("id_alert"),
-      ~number(.x, accuracy = 0.01)
-    )
+  left_join(
+    old_lines,
+    by = c("id_alert_old" = "id_alert_old")
+  ) %>% 
+  left_join(
+    new_lines,
+    by = c("id_alert_new" = "id_alert_new")
+  ) %>% 
+  select(
+    -c(id_alert_new, id_alert_old)
   ) %>% 
   mutate(
     across(
-      where(is.numeric) & !starts_with("id_alert"),
+      where(is.numeric) & !starts_with("beginline_"),
       ~number(.x, accuracy = 0.01)
     )
+  ) %>% 
+  relocate(
+    beginline_old, beginline_new
   ) %>% 
   kable(
     format = "latex",
@@ -912,15 +933,16 @@ Table \ref{table_features} shows the combinations $(n,o)$ in the example. There 
     align = "r",
     linesep = "",
     col.names = c(
-      "Alert id\n(new version)",
-      "Alert id\n(old version)",
+      "Begin\nLine\n(old version)",
+      "Begin\nLine\n(new version)",
+      "Same\nRule",
       "Same\nGroup",
       "Same\nMethod",
       "Same\nBlock",
-      "Line Distance",
-      "Line Distance\nnormalized by block)",
-      "Line Distance\nnormalized by block)",
-      "Line Distance\nnormalized by complie unit)"
+      "Line\nDistance",
+      "Line\nDistance\nnormalized\nby block)",
+      "Line\nDistance\nnormalized\nby block)",
+      "Line\nDistance\nnormalized\nby complie unit)"
     ) %>% linebreak()
   ) %>%
   kable_styling(
@@ -936,8 +958,8 @@ Table \ref{table_features} shows the combinations $(n,o)$ in the example. There 
 ```{r}
 
 teste <- calculate_features_from_versions(
-  code_file_new = "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree/code.java" ,
-  code_file_old = "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree-new/code.java"
+  code_file_new = "little-tree/code.java" ,
+  code_file_old = "little-tree-new/code.java"
 )
 
 ```
