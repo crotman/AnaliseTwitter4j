@@ -1264,7 +1264,15 @@ graph_path_from_alert <- function(graph, id_node){
 
 
 
-calculate_features_from_versions <- function(code_file_new = "", code_file_old = "", code_new = "", code_old = ""){
+calculate_features_from_versions <- function(
+    code_file_new = "", 
+    code_file_old = "", 
+    code_new = "", 
+    code_old = "",
+    mostra_new = c(10, 43, 17, 15, 18, 16, 45, 44),
+    mostra_old = c(10, 42, 41, 15, 16, 43)
+    
+    ){
     
     # code_file_old <- "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree/code.java"
     # code_file_new <- "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree-new/code.java"
@@ -1453,7 +1461,7 @@ calculate_features_from_versions <- function(code_file_new = "", code_file_old =
         ) %>% 
         mutate(
             mostra = case_when(
-                id_alert %in% c(10, 43, 17, 15, 18, 16, 45, 44) ~ 1,
+                id_alert %in% mostra_new ~ 1,
                 TRUE ~ -1 
             )
         )
@@ -1469,7 +1477,7 @@ calculate_features_from_versions <- function(code_file_new = "", code_file_old =
         ) %>% 
         mutate(
             mostra = case_when(
-                id_alert %in% c(10, 42, 41, 15, 16, 43) ~ 1,
+                id_alert %in% mostra_old ~ 1,
                 TRUE ~ -1 
             )
         )
