@@ -1523,9 +1523,13 @@ calculate_features_from_versions <- function(
             text_alert_id_node = if_else(is.na(id_alert_alert),
                                          "",
                                          str_glue("{id_alert}-{rule_alert}") %>%  as.character()
-            )
+            ),
             
-            
+            text_line_rule = if_else(is.na(id_alert_alert),
+                                     "",
+                                     str_glue("{id_alert}-{rule_alert}") %>%  as.character()
+                                     
+            )                        
             
             
         ) 
