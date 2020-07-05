@@ -737,7 +737,6 @@ read_raw_ast_nodes <-  function(code_location, output_location ){
             )
         )
     
-    print(output_location)
     file.remove(output_location)
     
     returned_value
@@ -779,6 +778,7 @@ show_latex_raw_ast_nodes <- function(nodes){
 
 generate_ast_tree_from_raw_nodes <-  function(nodes){
     
+
     max_column <- max(nodes$endcolumn)
     
     nodes_from <- nodes %>%  rename_all(.funs = ~str_glue("{.x}_from"))
@@ -824,8 +824,8 @@ generate_ast_tree_from_raw_nodes <-  function(nodes){
         ) %>%  
         mutate(
             name = case_when(
-                small_rule %in% c("name", "class_type","var_id" ) ~ str_glue('{id_alert}:{small_rule}:{code}'),
-                TRUE ~ str_glue("{id_alert}:{small_rule}")
+                small_rule %in% c("name", "class_type","var_id" ) ~ str_glue('{id_alert}:line:{beginline},{small_rule}:{code}'),
+                TRUE ~ str_glue("{id_alert}:line:{beginline},{small_rule}")
             )
         )
     
@@ -887,6 +887,8 @@ show_ast <-  function(
     #     ) %>% 
     #     as_tibble()
     
+    
+
 
     if(show_label){
         
@@ -898,7 +900,8 @@ show_ast <-  function(
                 size = size_label,
                 label.padding = 0.4,
                 alpha = alpha_label,
-                stroke = 4
+                stroke = 4,
+                hjust = "left"
             )
         }
         else{
@@ -1176,11 +1179,15 @@ calculate_features <-  function(graph_old, graph_new, coordinates){
                 id_group_new == id_group_old, 
                 end_common_line_old, 
                 NA_integer_
-            )
+            ),
+            
+            last_method_name_old = method_old,
+            
+            last_method_name_new = method_new
             
             
-            
-        ) %>% 
+        ) %T>%
+        write_rds(path = "features.rds") %>% 
         fill(
             last_method_id_old,
             last_method_id_new,
@@ -1209,12 +1216,15 @@ calculate_features <-  function(graph_old, graph_new, coordinates){
             last_class_end_line_old,
             last_class_end_line_new,
             rule_alert_new, 
-            rule_alert_old
+            rule_alert_old,
+            last_method_name_old,
+            last_method_name_new
         ) %>%
         mutate(
             same_rule = rule_alert_new == rule_alert_old,
             same_id_group = id_group_new == id_group_old,  
-            same_method = last_method_id_new == last_method_id_old,
+            same_method_group = last_method_id_new == last_method_id_old,
+            same_method_name = last_method_name_old == last_method_name_new,
             same_block = last_block_id_new == last_block_id_old,
             last_common_group_mean_line = (last_common_group_begin_line + last_common_group_end_line)/2,
             mean_line_new = (begin_common_line_new + end_common_line_new)/2,
@@ -1225,7 +1235,7 @@ calculate_features <-  function(graph_old, graph_new, coordinates){
             dist_line_normalized_block = dist_line/if_else(size_last_block == 0, 1L , size_last_block ),
             size_unit = last_class_end_line_new - last_class_begin_line_new,
             size_method = if_else(
-                same_method,
+                same_method_group,
                 last_method_end_line_new - last_method_begin_line_new,
                 size_unit
             ),  
@@ -1235,7 +1245,8 @@ calculate_features <-  function(graph_old, graph_new, coordinates){
         select(
             same_rule,
             same_id_group,
-            same_method,
+            same_method_group,
+            same_method_name,
             same_block,
             dist_line,
             dist_line_normalized_block,
@@ -1270,13 +1281,14 @@ calculate_features_from_versions <- function(
     code_new = "", 
     code_old = "",
     mostra_new = c(10, 43, 17, 15, 18, 16, 45, 44),
-    mostra_old = c(10, 42, 41, 15, 16, 43)
+    mostra_old = c(10, 42, 41, 15, 16, 43),
+    glue_string = ""
     
     ){
     
     # code_file_old <- "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree/code.java"
     # code_file_new <- "C:/doutorado/AnaliseTwitter4j/match_algorithm_description/little-tree-new/code.java"
-
+    # 
     # code_new <- default_code_new
     # code_old <- default_code_old
     
@@ -1381,6 +1393,7 @@ calculate_features_from_versions <- function(
             new = map_add
         )
     
+    write_rds(map, "map.rds")
     
     map_begin <- map %>% 
         rename_all(
@@ -1448,7 +1461,9 @@ calculate_features_from_versions <- function(
             id_group = row_number()
         )
     
+    write_rds(match_nodes, "match_nodes.rds")
     
+    offset_id_group_na <- 0L
     
     graph_new_with_group <- graph_new %>% 
         activate(nodes) %>% 
@@ -1464,7 +1479,12 @@ calculate_features_from_versions <- function(
                 id_alert %in% mostra_new ~ 1,
                 TRUE ~ -1 
             )
+        ) %>% 
+        mutate(
+            id_group = if_else(is.na(id_group), -row_number()-offset_id_group_na, id_group)
         )
+    
+    offset_id_group_na <- nrow(graph_new_with_group %>% activate(nodes) %>%  as_tibble())
     
     graph_old_with_group <- graph_old %>% 
         activate(nodes) %>% 
@@ -1480,7 +1500,10 @@ calculate_features_from_versions <- function(
                 id_alert %in% mostra_old ~ 1,
                 TRUE ~ -1 
             )
-        )
+        ) %>% 
+        mutate(
+            id_group = if_else(is.na(id_group), -row_number()-offset_id_group_na, id_group)
+        )        
     
     
     alerts_old <- examples_sec2_executed$pmd_output[[1]] %>% 
@@ -1529,11 +1552,15 @@ calculate_features_from_versions <- function(
                                      "",
                                      str_glue("{id_alert}-{rule_alert}") %>%  as.character()
                                      
-            )                        
+            ),
+            
+            glue = str_glue(glue_string)
             
             
         ) 
     
+    
+
     
     graph_new_with_alert <- graph_new_with_group %>% 
         activate(nodes) %>% 
@@ -1557,8 +1584,10 @@ calculate_features_from_versions <- function(
             text_alert_id_node = if_else(is.na(id_alert_alert),
                                          "",
                                          str_glue("{id_alert}-{rule_alert}") %>%  as.character()
-            )
+            ),
             
+            glue = str_glue(glue_string)
+
         ) 
     
 
@@ -1627,5 +1656,135 @@ calculate_features_from_versions <- function(
     saida
 
 }
+
+
+
+report_features <- function(features_df, caption){
+    
+
+    old_lines <- features_df$graph_old_with_alert %>%
+        activate(nodes) %>% 
+        as_tibble() %>% 
+        filter(!is.na(id_alert_alert)) %>% 
+        select(id_alert, beginline) %>% 
+        rename_with( ~str_glue("{.x}_old")) 
+    
+    new_lines <- features_df$graph_new_with_alert %>%
+        activate(nodes) %>% 
+        as_tibble() %>% 
+        filter(!is.na(id_alert_alert)) %>% 
+        select(id_alert, beginline) %>% 
+        rename_with( ~str_glue("{.x}_new")) 
+    
+    
+    feature_names_translation <- tribble(
+        ~feature,                       ~feature_display,
+        "same_rule",                   "Same Rule",
+        "same_id_group",               "Same Group ID",
+        "same_method_group",           "Same Method Group ID",
+        "same_method_name" ,           "Same Method Name",
+        "same_block",                  "Same Block Name",
+        "dist_line",                   "Line Distance",
+        "dist_line_normalized_block"  ,"Line Distance Normalized by Block Size",
+        "dist_line_normalized_method" ,"Line Distance Normalized by Method Size",
+        "dist_line_normalized_unit",   "Line Distance Normalized by Compilation Unit Size"
+        
+        
+    )
+    
+    
+    saida_tabela <- features_df$features %>%
+        unnest(features, .sep = ".") %>%
+        select(
+            starts_with("id_alert") | starts_with("features")
+        ) %>%
+        left_join(
+            old_lines,
+            by = c("id_alert_old" = "id_alert_old")
+        ) %>%
+        left_join(
+            new_lines,
+            by = c("id_alert_new" = "id_alert_new")
+        ) %>%
+        select(
+            -c(id_alert_new, id_alert_old)
+        ) %>%
+        mutate(
+            across(
+                where(is.numeric) & !starts_with("beginline_"),
+                ~number(.x, accuracy = 0.01)
+            )
+        ) %>%
+        mutate(
+            across(
+                where(is.logical),
+                as.character
+            )
+        ) %>%
+        relocate(
+            beginline_old, beginline_new
+        ) %>%
+        pivot_longer(
+            cols = c(-beginline_old, -beginline_new),
+            names_to = "feature",
+            values_to = "value"
+        ) %>% 
+        mutate(
+            line_old_line_new = str_glue("Line (Old version):{beginline_old}, Line (New version):{beginline_new}")
+        ) %>%
+        select(
+            c(-beginline_new, -beginline_old)
+        ) %>% 
+        relocate(
+            line_old_line_new
+        ) %>% 
+        mutate(
+            feature = str_remove(feature, "feature.") %>% str_remove("\\.")
+        ) %>% 
+        left_join(
+            feature_names_translation,
+            by = c("feature")
+        ) %>% 
+        select(
+            line_old_line_new,
+            feature = feature_display,
+            value
+        )
+    
+    
+    
+    kable(saida_tabela,
+          format = "latex",
+          caption = caption,
+          escape = TRUE,
+          # booktabs = TRUE,
+          # align = "r",
+          # linesep = "",
+          col.names = c(
+              "Alert combination",
+              "Feature",
+              "Value"
+          )
+    ) %>%
+        collapse_rows(columns = 1, latex_hline = "major", valign =  "top") %>% 
+        kable_styling(
+            latex_options = c("hold_position", "striped")
+        )
+    
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

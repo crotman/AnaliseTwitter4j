@@ -1,7 +1,7 @@
 
 library(shiny)
 library(shinydashboardPlus)
-
+library(shinythemes)
 library(xml2)
 library(tidyverse)
 library(gt)
@@ -13,7 +13,6 @@ library(patchwork)
 library(magrittr)
 library(scales)
 library(magrittr)
-library(codeModules)
 library(waiter)
 
 decorate_code_shiny <-  function(code){
@@ -102,7 +101,7 @@ input_new_code <- textAreaInput(
 
 
 # Define UI for application that draws a histogram
-ui <- fluidPage(
+ui <- fluidPage(theme = shinytheme("slate"),
     use_waiter(),  
     # Application title
     titlePanel("Match alerts"),
@@ -110,9 +109,11 @@ ui <- fluidPage(
         wellPanel(
             actionButton(inputId = "go_button",label = "Run!"),
             actionButton(inputId = "save_button",label = "Save Files"),
+            actionButton(inputId = "load_button",label = "Load Files"),
             textInput(inputId = "path_to_save", label = "Path to Save" ),
-            textInput(inputId = "nodes_old", label = "Highlight nodes (old)", value = "10, 42, 41, 15, 16, 43"),
-            textInput(inputId = "nodes_new", label =  "Highlight nodes (new)", value = "10, 43, 17, 15, 18, 16, 45, 44"),
+            textInput(inputId = "nodes_old", label = "Highlight nodes (old)", value = ""),
+            textInput(inputId = "nodes_new", label =  "Highlight nodes (new)", value = ""),
+            textAreaInput(inputId = "glue", label =  "glue", value = "{rule_alert}"),
             accordion(        
                 accordionItem(
                     id = "old",
@@ -130,14 +131,10 @@ ui <- fluidPage(
         ,
         verticalLayout(
             splitLayout(
-                codeOutput(outputId = "old_code_out"),
-                codeOutput(outputId = "new_code_out")
+                verbatimTextOutput(outputId = "old_code_out"),
+                verbatimTextOutput(outputId = "new_code_out")
             ),
             plotOutput("grafico1", height = 1200),
-            plotOutput("grafico2", height = 1200),
-            plotOutput("grafico3", height = 1200),
-            plotOutput("grafico4", height = 1200)
-            ,
             gt_output(
                 outputId = "tabela"
             )
@@ -148,7 +145,7 @@ ui <- fluidPage(
 )
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- function(input, output, session) {
 
     string_to_vector <- function(x){
         x %>% 
@@ -159,13 +156,19 @@ server <- function(input, output) {
     
     
     saida_algoritmo <- reactive({
+
+        if(input$go_button == 0){
+            return()
+        }
+        
+        
         waiter_show()
         saida <- calculate_features_from_versions(
-            code_new = input$input_new_code, 
-            code_old = input$input_old_code,
-            mostra_new = string_to_vector(input$nodes_new),
-            mostra_old = string_to_vector(input$nodes_old)
-                
+            code_new = isolate(input$input_new_code), 
+            code_old = isolate(input$input_old_code),
+            mostra_new = string_to_vector(isolate(input$nodes_new)),
+            mostra_old = string_to_vector(isolate(input$nodes_old)),
+            glue_string = isolate(input$glue)
         )
         
     }) 
@@ -180,26 +183,45 @@ server <- function(input, output) {
             write_lines(input$input_new_code, path = str_glue("{dir_new}/code.java") )
             write_lines(input$input_old_code, path = str_glue("{dir_old}/code.java") )
         }
-        
-        
     )
 
+    observeEvent(
+        eventExpr =  input$load_button,
+        handlerExpr = {
+            dir_new <- str_glue("{input$path_to_save}/new/code.java")
+            dir_old <- str_glue("{input$path_to_save}/old/code.java")
+            updateTextInput(
+                inputId = "input_new_code",
+                value = read_lines(dir_new) %>% str_flatten(collapse = "\n"),
+                session = session
+            )
+            updateTextInput(
+                inputId = "input_old_code",
+                value = read_lines(dir_old) %>% str_flatten(collapse = "\n"),
+                session = session
+            )
+        }
+    )
+    
+    
     
     output$grafico1 <- renderPlot({
 
-        if(input$go_button == 0){
+
+        dados <- saida_algoritmo()
+
+        
+        if(is.null(dados)){
             return()
         }
-        
-        dados <- isolate(saida_algoritmo())
         
 
         chart_graph_new <- show_ast(
             dados$graph_new_with_alert,
             size_label = 5,
             show_label = TRUE,
-            alpha_label = 1,
-            name_field = "text_alert_id_node"
+            alpha_label = "mostra",
+            name_field = "glue"
             
         )
         
@@ -207,136 +229,30 @@ server <- function(input, output) {
             dados$graph_old_with_alert,
             size_label = 5,
             show_label = TRUE,
-            alpha_label = 1,
-            name_field = "text_alert_id_node"
+            alpha_label = "mostra",
+            name_field = "glue"
             
         )
         
         
         
-        chart_graph_old + chart_graph_new
+        chart_graph_old  + chart_graph_new
         
                 
     })
 
-    output$grafico2 <- renderPlot({
-        
-        if(input$go_button == 0){
-            return()
-        }
-        
-        dados <- isolate(saida_algoritmo())
-        
-        
-        chart_graph_old <- show_ast(
-            dados$graph_old_with_group, 
-            size_label = 4, 
-            show_label = TRUE, 
-            alpha_label = "mostra", 
-            title = "Old version"
-        ) 
-        
-        chart_graph_new <- show_ast(
-            dados$graph_new_with_group, 
-            size_label = 4, 
-            show_label = TRUE, 
-            alpha_label = "mostra",
-            title = "New version"
-        )
-        
-        
-        chart_graph_old + chart_graph_new
-        
-        
-        
-    })
-    
-
-    
-    output$grafico3 <- renderPlot({
-        
-        if(input$go_button == 0){
-            return()
-        }
-        
-        dados <- isolate(saida_algoritmo())
-        
-        
-        chart_graph_old <- show_ast(
-            dados$graph_old_with_group, 
-            size_label = 4, 
-            show_label = TRUE, 
-            alpha_label = 0, 
-            node_text_field = "id_group" 
-        )
-        
-        chart_graph_new <- show_ast(
-            dados$graph_new_with_group, 
-            size_label = 4, 
-            show_label = TRUE, 
-            alpha_label = 0, 
-            node_text_field = "id_group" 
-        )
-        
-        
-        chart_graph_old + chart_graph_new
-        
-        
-        
-    })
-    
-    
-    
-    output$grafico4 <- renderPlot({
-        
-        if(input$go_button == 0){
-            return()
-        }
-        
-        dados <- isolate(saida_algoritmo())
-        
-        
-        chart_graph_old <- show_ast(
-            dados$graph_old_with_alert, 
-            size_label = 5, 
-            show_label = TRUE, 
-            alpha_label = 1, 
-            node_text_field = "id_group",
-            name_field = "text_alert"
-            
-        )
-        
-        
-        chart_graph_new <- show_ast(
-            dados$graph_new_with_alert, 
-            size_label = 5, 
-            show_label = TRUE, 
-            alpha_label = 1, 
-            node_text_field = "id_group",
-            name_field = "text_alert"
-            
-        )
-        
-        
-        chart_graph_old + chart_graph_new
-        
-        
-        
-        
-    })
-    
-    
     
     
     output$tabela <- render_gt({
         
-        if(input$go_button == 0){
+
+        dados <- saida_algoritmo()
+        
+        if(is.null(dados)){
             return()
         }
         
-        dados <- isolate(saida_algoritmo())
-        
-        
+                
         alerts_old <- dados$graph_old_with_alert %>% 
             activate(nodes) %>% 
             as_tibble() %>% 
@@ -379,7 +295,8 @@ server <- function(input, output) {
                 rule_alert_new,
                 same_rule,
                 same_id_group,
-                same_method,
+                same_method_group,
+                same_method_name,
                 same_block,
                 dist_line,
                 dist_line_normalized_block,
@@ -401,7 +318,8 @@ server <- function(input, output) {
                 rule_alert_new = "New rule" %>% html(),
                 same_rule = "Same rule" %>% html()  ,
                 same_id_group = "Same group" %>%  html(),
-                same_method = "Same method" %>%  html(),
+                same_method_group = "Same<br>method group" %>%  html(),
+                same_method_name = "Same<br>method name" %>%  html(),
                 same_block = "Same block" %>%  html(),
                 dist_line = "Distance" %>%  html(),
                 dist_line_normalized_block = "Distance<br>(norm. block)" %>%  html(),
@@ -419,13 +337,13 @@ server <- function(input, output) {
         
     })
     
-    output$old_code_out <- renderCode({
+    output$old_code_out <- renderText({
         saida <- decorate_code_shiny(input$input_old_code)
         saida
     })
 
     
-    output$new_code_out <- renderCode({
+    output$new_code_out <- renderText({
         saida <- decorate_code_shiny(input$input_new_code)
         saida
     })
@@ -433,5 +351,10 @@ server <- function(input, output) {
         
 }
 
-# Run the application 
+# Run the application
 shinyApp(ui = ui, server = server)
+
+
+
+
+

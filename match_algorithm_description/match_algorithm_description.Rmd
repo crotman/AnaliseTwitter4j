@@ -697,7 +697,7 @@ Even though it's not possible to be sure if a pair alerts in different versions 
 The features can be an input to a heuristic or a machine learning tool which can decide if the alerts are the same.
 
 
-\subsubsection{Features engineering} \label{feature_creation}
+\subsubsection{Feature engineering} \label{feature_creation}
 
 In this Section, we will consider the old version in Figure \ref{old_simple_code} and the new version in Figure \ref{new_simple_code}
 
@@ -885,97 +885,52 @@ Table \ref{table_features} shows the combinations $(n,o)$ in the example. There 
 
 ```{r}
 
-  old_lines <- saida_alg2$graph_old_with_alert %>%
-    activate(nodes) %>% 
-    as_tibble() %>% 
-    filter(!is.na(id_alert_alert)) %>% 
-    select(id_alert, beginline) %>% 
-    rename_with( ~str_glue("{.x}_old")) 
+report_features(saida_alg2, "caption teste \\label{table_features} ")
   
-  new_lines <- saida_alg2$graph_new_with_alert %>%
-    activate(nodes) %>% 
-    as_tibble() %>% 
-    filter(!is.na(id_alert_alert)) %>% 
-    select(id_alert, beginline) %>% 
-    rename_with( ~str_glue("{.x}_new")) 
-
-
-  saida_alg2$features %>%
-  unnest(features, .sep = ".") %>% 
-  select(
-    starts_with("id_alert") | starts_with("features")
-  ) %>%
-  left_join(
-    old_lines,
-    by = c("id_alert_old" = "id_alert_old")
-  ) %>% 
-  left_join(
-    new_lines,
-    by = c("id_alert_new" = "id_alert_new")
-  ) %>% 
-  select(
-    -c(id_alert_new, id_alert_old)
-  ) %>% 
-  mutate(
-    across(
-      where(is.numeric) & !starts_with("beginline_"),
-      ~number(.x, accuracy = 0.01)
-    )
-  ) %>% 
-  relocate(
-    beginline_old, beginline_new
-  ) %>% 
-  kable(
-    format = "latex",
-    caption = "Classifications of the alerts in the old version \\label{table_features}",
-    escape = FALSE,
-    booktabs = TRUE,
-    align = "r",
-    linesep = "",
-    col.names = c(
-      "Begin\nLine\n(old version)",
-      "Begin\nLine\n(new version)",
-      "Same\nRule",
-      "Same\nGroup",
-      "Same\nMethod",
-      "Same\nBlock",
-      "Line\nDistance",
-      "Line\nDistance\nnormalized\nby block)",
-      "Line\nDistance\nnormalized\nby block)",
-      "Line\nDistance\nnormalized\nby complie unit)"
-    ) %>% linebreak()
-  ) %>%
-  kable_styling(
-    font_size = 6,
-    latex_options = c("hold_position", "striped")
-  ) 
-
-
 ```
 
 
 
 ```{r}
 
-teste <- calculate_features_from_versions(
-  code_file_new = "little-tree/code.java" ,
-  code_file_old = "little-tree-new/code.java"
+features_rename <- calculate_features_from_versions(
+  code_file_new = "match_alerts_app/rename_method/old/code.java" ,
+  code_file_old = "match_alerts_app/rename_method/new/code.java"
 )
 
 ```
 
 
+\subsubsection{Example: Renaming method} \label{example_rename_method}
+
+In this example, the new and old versions have only one alert. In the old version \ref{old_rename}, and new \ref{new_rename}
+
+\newpage
+
+```{java rename old version, code=read_and_decorate_code_and_alerts("match_alerts_app/rename_method/old/code.java", features_rename$versions_executed$pmd_output[[1]], FALSE, 10), echo = TRUE }
+
+```
 
 
+![Old version  \label{old_rename}](figures/fake.png)
+
+\newpage
+
+```{java rename new version, code=read_and_decorate_code_and_alerts("match_alerts_app/rename_method/new/code.java", features_rename$versions_executed$pmd_output[[2]], FALSE, 10), echo = TRUE }
+
+```
+
+![New version  \label{new_rename}](figures/fake.png)
 
 
+In the \ref{features_rename}
+
+```{r}
+
+report_features(features_rename, "caption teste \\label{features_rename} ")
 
 
-
-
-
-
-
+```
 
 
 
