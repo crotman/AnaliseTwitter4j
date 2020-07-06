@@ -1,7 +1,6 @@
 ---
-title: "Matching PMD Alerts"
+title: "PMD alerts as possible kludges: open, fixed or new?"
 author: "Bruno Crotman"
-date: "04/05/2020"
 header-includes:
   - \usepackage{lscape}
   - \newcommand{\blandscape}{\begin{landscape}}
@@ -148,15 +147,15 @@ The second is a more sophisticated algorithm, based on matches by blocks of code
 \section{PMD Source Code Analyzer}\label{pmd}
 
 PMD is static source code analyzer that is commonly used to find possible programming flaws. 
-In this work we use PMD for two tasks: generate alerts that we interpret as clues about kludges and create an AST from the source code with selected kinds of node.
+In this work we use PMD for two tasks: to generate alerts that we interpret as clues about kludges and to create an AST from the source code with selected kinds of node.
 
 \subsection{Using PMD to generate alerts}\label{pmd_alerts}
 
-PMD traverses the AST of a source code searching for violations of rules that are configured by the user. 
+PMD traverses the AST of a source code searching for violations of rules which are configured by the user. 
 PMD comes with a default rule set for Java language. 
 The default rule set finds common programming flaws like unused variables, empty catch blocks, unnecessary object creation, and so forth. 
-It´s possible configure a different set of rules creating a custom XML file. 
-At this point we use the default rule set to generate the alerts that we interpret as kludges and try to categorize in Section \ref{alg}
+It´s possible to configure a different set of rules creating a custom XML file. 
+At this point we use the default rule set to generate the alerts that we interpret as kludges and try to categorize by the algorithms described in Section \ref{alg}
 
 \newpage
 
@@ -193,11 +192,11 @@ PMD lets us configure our own rules. Figure \ref{pmd_designer_fig} shows the des
 ![PMD Designer tool\label{pmd_designer_fig}](figures/pmddesigner.png)
 
 We can see that the tool traverses the source code visiting many different kinds of elements. 
-If we build our own simple rules, aimed only to capture some kinds of elements, we will generate list of "alerts" that will contain all the elements of the chosen kinds.
+If we build our own simple rules, aimed only to capture some kinds of elements, we will generate list of "alerts" that will contain all the elements of the chosen kinds contained in the AST.
 
 \newpage
 
-In Figure \ref{ruleset}, we show an example of a ruleset that captures all the method declarations.
+In Figure \ref{ruleset}, we show an example of a rule set that captures all the method declarations.
 
 ```{xml, code=read_lines("blockrules/extractblockrules.xml"), echo = TRUE }
 
@@ -236,7 +235,7 @@ map_rule_small %>%
 ```
 
 
-If we select the list in Table \ref{selected_nodes}, the simple code shown in this Section captures the elements shown in Table \ref{elements_captured}    
+When we select the list in Table \ref{selected_nodes}, the simple code shown in Figure \ref{simple_code} captures the elements shown in Table \ref{elements_captured}    
 
 
 ```{r}
@@ -255,12 +254,12 @@ show_latex_raw_ast_nodes(nodes)
 Table \ref{selected_nodes} contains the list and location of the elements of the AST. 
 In order to recreate the AST, we must follow three steps:
 
-1. Link each element $a$ to the set of elements $X$ that are fully located between the begin line / begin column and end line / end column of element $a$. 
-We can construct a directed graph in which the elements are the nodes and the links are the edges. 
+1. Link each element $a$ to the set of elements $X$ that are fully contained between the begin line / begin column and end line / end column of element $a$. 
+We can construct a directed graph in which the elements are the nodes and the links described are the edges. 
 This is not a tree yet, because each node will have edges directed to all its descendants and not only its children in the AST.
 
 2. Sort the nodes in the decreasing order of its number of children. 
-The objective is to establish that, in a search through this graph, the first child chosen will be the one that is a child in the AST, and not only on this graph.
+The objective is to establish that, in a search through this graph, the first child chosen will be the one that is a child in the AST, and not only a descendant.
 
 3. Proceed a deep-first search starting from the compilation unit node.
 
@@ -869,23 +868,32 @@ The algorithm generates a set of features for each pair of alerts $(n,o)$ with o
 
 We propose the following list of features:
 
+* Same Rule: a boolean indicator that tells if the alerts are of the sdame type
+
 * Same Group ID: a boolean indicator that tells if the alerts are equivalent as defined in Figure \ref{AST_groups}
 
-* Same Method: a boolean indicator that tells if the alerts belong to the same method. We know the alert's method following the path from the alert´s node to the root. The first node of the kind "method" found in this path defines the alert's method. If this is the same for $o$ and for $n$, then they belong to the same method.
+* Same Method Group ID: a boolean indicator that tells if the alerts belong to the same method. We know the alert's method following the path from the alert´s node to the root. The first node of the kind "method" found in this path defines the alert's method. If this is the same for $o$ and for $n$, then they belong to the same method.
 
-* Same Block: a boolean indicator that show if the $o$ and $n$ belong to the same block. It is defined the same way the "Same method" indicator is defined.
+* Same Method Name: a boolean indicator that tells if the alerts were found in a method with the same name.
+
+* Same Block: a boolean indicator that shows if the $o$ and $n$ belong to the same block. It is defined the same way the "Same method" indicator is defined.
+
+* Same Code: a boolean indicator that shows the nodes that generate the alert have the same programming code.
 
 * Line distance: $o$ and $n$ have a begin line $b(o)$ and $b(n)$ and an end line $e(n)$ and $e(n)$. Line distance is $abs(mean(b(o), e(o)) - mean(b(n), e(n)))$
 
-* Normalized line distance: this is the line distance but normalized by the size of the last common node.
+* Normalized line distance (block size): this is the line distance but normalized by the size of the last common node.
 
+* Normalized line distance (method size): this is the line distance but normalized by the size of the last common method (if there is no common method, it´s normalized by the side of the compilation unit).
+
+* Normalized line distance (compilation unit size): this is the line distance but normalized by the size of the compilation unit.
 
 Table \ref{table_features} shows the combinations $(n,o)$ in the example. There are $2 \cdot 1 = 2$ combinations whereas we have two alerts in the old version and one alert in the new one.  
 
 
 ```{r}
 
-report_features(saida_alg2, "caption teste \\label{table_features} ")
+report_features(saida_alg2, "Resulting features\\label{table_features} ")
   
 ```
 
@@ -894,8 +902,8 @@ report_features(saida_alg2, "caption teste \\label{table_features} ")
 ```{r}
 
 features_rename <- calculate_features_from_versions(
-  code_file_new = "match_alerts_app/rename_method/old/code.java" ,
-  code_file_old = "match_alerts_app/rename_method/new/code.java"
+  code_file_new = "match_alerts_app/rename_method/new/code.java" ,
+  code_file_old = "match_alerts_app/rename_method/old/code.java"
 )
 
 ```
@@ -903,7 +911,7 @@ features_rename <- calculate_features_from_versions(
 
 \subsubsection{Example: Renaming method} \label{example_rename_method}
 
-In this example, the new and old versions have only one alert. In the old version \ref{old_rename}, and new \ref{new_rename}
+In this example, the new and old versions have only one alert. The method in which the alert happens is renamed from MethodX to methodZ.
 
 \newpage
 
@@ -922,20 +930,221 @@ In this example, the new and old versions have only one alert. In the old versio
 
 ![New version  \label{new_rename}](figures/fake.png)
 
-
-In the \ref{features_rename}
+In the Table \ref{features_rename} we can see that the features "Same Method Name" and "Same Method Group ID" are now FALSE.
 
 ```{r}
 
-report_features(features_rename, "caption teste \\label{features_rename} ")
+report_features(features_rename, "Resulting features: rename method example \\label{features_rename} ")
+
+
+```
+
+
+\subsubsection{Example: including a statement before} \label{example_including_statement}
+
+
+```{r}
+
+include_statement_before <- calculate_features_from_versions(
+  code_file_new = "match_alerts_app/include_statement_before/new/code.java" ,
+  code_file_old = "match_alerts_app/include_statement_before/old/code.java"
+)
+
+```
+
+
+In this example, a new statement is included before the alert.
+
+\newpage
+
+```{java include_statement_before old version, code=read_and_decorate_code_and_alerts("match_alerts_app/include_statement_before/old/code.java", include_statement_before$versions_executed$pmd_output[[1]], FALSE, 10), echo = TRUE }
+
+```
+
+
+![Old version  \label{old_rename}](figures/fake.png)
+
+\newpage
+
+```{java include_statement_before new version, code=read_and_decorate_code_and_alerts("match_alerts_app/include_statement_before/new/code.java", include_statement_before$versions_executed$pmd_output[[2]], FALSE, 10), echo = TRUE }
+
+```
+
+![New version  \label{new_rename}](figures/fake.png)
+
+In the Table \ref{include_statement_before} we can see that the features are not affected by this new statement.
+
+```{r}
+
+report_features(include_statement_before, "Resulting features: statement included before \\label{include_statement_before} ")
+
+
+```
+
+
+\subsubsection{Example: nesting the alert in an if statement} \label{example_nested_in_other_if}
+
+```{r}
+
+nested_in_other_if <- calculate_features_from_versions(
+  code_file_new = "match_alerts_app/nested_in_other_if/new/code.java" ,
+  code_file_old = "match_alerts_app/nested_in_other_if/old/code.java"
+)
+
+```
+
+
+In this example, the statement that generates the alert is nested in an if statement that did not exist.
+
+\newpage
+
+```{java nested_in_other_if old version, code=read_and_decorate_code_and_alerts("match_alerts_app/nested_in_other_if/old/code.java", nested_in_other_if$versions_executed$pmd_output[[1]], FALSE, 10), echo = TRUE }
+
+```
+
+
+![Old version  \label{old_rename}](figures/fake.png)
+
+\newpage
+
+```{java nested_in_other_if new version, code=read_and_decorate_code_and_alerts("match_alerts_app/nested_in_other_if/new/code.java", nested_in_other_if$versions_executed$pmd_output[[2]], FALSE, 10), echo = TRUE }
+
+```
+
+![New version  \label{new_rename}](figures/fake.png)
+
+In the Table \ref{nested_in_other_if} we can see that the algorithm does not recognize the two nodes as equivalent, but other features can lead us to the conclusion that the alert is still open.
+
+```{r}
+
+report_features(nested_in_other_if, "Resulting features: statement included before \\label{nested_in_other_if} ")
+
+
+```
+
+
+\subsubsection{Example: editing the line that generates the alert} \label{example_editing_line}
+
+```{r}
+
+editing_line <- calculate_features_from_versions(
+  code_file_new = "match_alerts_app/editing_line/new/code.java" ,
+  code_file_old = "match_alerts_app/editing_line/old/code.java"
+)
+
+```
+
+
+
+\newpage
+
+```{java editing_line old version, code=read_and_decorate_code_and_alerts("match_alerts_app/editing_line/old/code.java", editing_line$versions_executed$pmd_output[[1]], FALSE, 10), echo = TRUE }
+
+```
+
+
+![Old version  \label{old_rename}](figures/fake.png)
+
+\newpage
+
+```{java editing_line new version, code=read_and_decorate_code_and_alerts("match_alerts_app/editing_line/new/code.java", editing_line$versions_executed$pmd_output[[2]], FALSE, 10), echo = TRUE }
+
+```
+
+![New version  \label{new_rename}](figures/fake.png)
+
+In the Table \ref{editing_line} the nodes are not recognized as equivalent, but other features can lead us to the conclusion that the alert is still open.
+
+```{r}
+
+report_features(editing_line, "Resulting features: statement included before \\label{editing_line} ")
 
 
 ```
 
 
 
+\subsubsection{Example: changing the order of the methods} \label{example_editing_line}
 
 
+We changed the order of the methods in two ways
+
+
+```{r}
+
+changing_method_order <- calculate_features_from_versions(
+  code_file_new = "match_alerts_app/changing_method_order/new/code.java" ,
+  code_file_old = "match_alerts_app/changing_method_order/old/code.java"
+)
+
+```
+
+
+
+\newpage
+
+```{java changing_method_order old version, code=read_and_decorate_code_and_alerts("match_alerts_app/changing_method_order/old/code.java", changing_method_order$versions_executed$pmd_output[[1]], FALSE, 10), echo = TRUE }
+
+```
+
+
+![Old version  \label{old_rename}](figures/fake.png)
+
+\newpage
+
+```{java changing_method_order new version, code=read_and_decorate_code_and_alerts("match_alerts_app/changing_method_order/new/code.java", changing_method_order$versions_executed$pmd_output[[2]], FALSE, 10), echo = TRUE }
+
+```
+
+![New version  \label{new_rename}](figures/fake.png)
+
+In the Table \ref{changing_method_order} the nodes are not recognized as equivalent, but other features can lead us to the conclusion that the alert is still open.
+
+```{r}
+
+report_features(changing_method_order, "Resulting features: statement included before \\label{changing_method_order} ")
+
+
+```
+
+
+
+```{r}
+
+changing_method_order_2 <- calculate_features_from_versions(
+  code_file_new = "match_alerts_app/changing_method_order_2/new/code.java" ,
+  code_file_old = "match_alerts_app/changing_method_order_2/old/code.java"
+)
+
+```
+
+
+
+\newpage
+
+```{java changing_method_order_2 old version, code=read_and_decorate_code_and_alerts("match_alerts_app/changing_method_order_2/old/code.java", changing_method_order_2$versions_executed$pmd_output[[1]], FALSE, 10), echo = TRUE }
+
+```
+
+
+![Old version  \label{old_rename}](figures/fake.png)
+
+\newpage
+
+```{java changing_method_order_2 new version, code=read_and_decorate_code_and_alerts("match_alerts_app/changing_method_order_2/new/code.java", changing_method_order_2$versions_executed$pmd_output[[2]], FALSE, 10), echo = TRUE }
+
+```
+
+![New version  \label{new_rename}](figures/fake.png)
+
+In the Table \ref{changing_method_order_2} the nodes are not recognized as equivalent, but other features can lead us to the conclusion that the alert is still open.
+
+```{r}
+
+report_features(changing_method_order, "Resulting features: statement included before \\label{changing_method_order_2} ")
+
+
+```
 
 
 
