@@ -739,6 +739,8 @@ read_raw_ast_nodes <-  function(code_location, output_location ){
     
     file.remove(output_location)
     
+    write_rds(returned_value, "ast.rds")
+    
     returned_value
 }
 
@@ -1023,15 +1025,20 @@ calculate_features <-  function(graph_old, graph_new, coordinates){
 
     alert_old <- graph_old %>% 
         activate(nodes) %>% 
-        as_tibble() %>%
+        as_tibble() %T>%
+        write_rds("alert_old.rds") %>% 
         select(
             beginline,
             endline,
             rule,
             id_group,
             method,
-            rule_alert
+            rule_alert,
+            code
         ) %>% 
+        rowwise() %>% 
+        mutate( code = str_flatten(code, collapse = "\n") ) %>%
+        ungroup() %>% 
         left_join(
             coordinates %>% select(-new),
             by = c("beginline" = "old")
@@ -1062,8 +1069,12 @@ calculate_features <-  function(graph_old, graph_new, coordinates){
             rule,
             id_group,
             method,
-            rule_alert
+            rule_alert,
+            code
         ) %>% 
+        rowwise() %>% 
+        mutate( code = str_flatten(code, collapse = "\n") ) %>%
+        ungroup() %>% 
         left_join(
             coordinates %>% select(-old),
             by = c("beginline" = "new")
@@ -1146,7 +1157,32 @@ calculate_features <-  function(graph_old, graph_new, coordinates){
             end_common_line_new, 
             NA_integer_
             ),
+
+            last_method_code_old = if_else(
+                rule_old %in% c(
+                    "compilation_unit", 
+                    "constructor_declaration", 
+                    "method"
+                ), 
+                code_old, 
+                NA_character_
+            ),
             
+            
+            last_method_code_new = if_else(
+                rule_new %in% c(
+                    "compilation_unit", 
+                    "constructor_declaration", 
+                    "method"
+                ), 
+                code_new, 
+                NA_character_
+            ),
+            
+            last_code_new = code_new,
+            last_code_old = code_old,
+            
+                        
             last_block_id_old = if_else(rule_old %in% c("compilation_unit","block"), id_group_old, NA_integer_),
             last_block_id_new = if_else(rule_new %in% c("compilation_unit","block"), id_group_new, NA_integer_),
             
@@ -1218,7 +1254,12 @@ calculate_features <-  function(graph_old, graph_new, coordinates){
             rule_alert_new, 
             rule_alert_old,
             last_method_name_old,
-            last_method_name_new
+            last_method_name_new,
+            last_method_code_new,
+            last_method_code_old,
+            last_code_new,
+            last_code_old
+            
         ) %>%
         mutate(
             same_rule = rule_alert_new == rule_alert_old,
@@ -1240,7 +1281,9 @@ calculate_features <-  function(graph_old, graph_new, coordinates){
                 size_unit
             ),  
             dist_line_normalized_method = dist_line/size_method,
-            dist_line_normalized_unit = dist_line/size_unit
+            dist_line_normalized_unit = dist_line/size_unit,
+            same_code = str_trim(last_code_old) == str_trim(last_code_new),
+            same_method_code = str_trim(last_method_code_old) == str_trim(last_method_code_new)
         ) %>% 
         select(
             same_rule,
@@ -1248,6 +1291,8 @@ calculate_features <-  function(graph_old, graph_new, coordinates){
             same_method_group,
             same_method_name,
             same_block,
+            same_code,
+            same_method_code,
             dist_line,
             dist_line_normalized_block,
             dist_line_normalized_method,
@@ -1644,6 +1689,7 @@ calculate_features_from_versions <- function(
     
     saida <- list(
         versions_executed = examples_sec2_executed,
+        versions_crossed = examples_sec2_crossed,
         graph_old_with_alert =  graph_old_with_alert,
         graph_new_with_alert = graph_new_with_alert,
         graph_old_with_group = graph_old_with_group,
@@ -1683,7 +1729,9 @@ report_features <- function(features_df, caption){
         "same_id_group",               "Same Group ID",
         "same_method_group",           "Same Method Group ID",
         "same_method_name" ,           "Same Method Name",
-        "same_block",                  "Same Block Name",
+        "same_block",                  "Same Block",
+        "same_code",                   "Same Code",
+        "same_method_code",            "Same Method Code",
         "dist_line",                   "Line Distance",
         "dist_line_normalized_block"  ,"Line Distance Normalized by Block Size",
         "dist_line_normalized_method" ,"Line Distance Normalized by Method Size",
